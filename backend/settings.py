@@ -16,11 +16,8 @@ import environ
 import django_heroku
 import datetime
 
+# Load the environment variables. 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
-
-
-print("------------------ BASE_DIR:", BASE_DIR)
-
 DJANGO_ENV = os.environ.get('DJANGO_ENV')
 
 env = environ.Env()

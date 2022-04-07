@@ -269,15 +269,10 @@ uploads_safe
 # .prettierc Configuration.
 .prettierignore
 .prettierrc
-
-
 ### PME
 pme_backup
-
 # Sonar. 
 .scannerwork
-
-
 # Django
 ./backend/db.sqlite3
 # ./backend/.env
@@ -285,3 +280,6 @@ pme_backup
 venv
 ./statics
 ./htmlcov
+
+/.env.development
+.env.development

@@ -1,5 +1,16 @@
-# Project Name
-### Django Template for backend Project backend
+# TacticTrade Backend
+
+This project is for algorithmic and collaborative trading.
+## Steps for run the project in the localhost
+
+Create the python environment
+
+    virtualenv venv --python=python3.9
+
+Active the python environment
+
+    source venv/bin/activate
+
 
 ### Create the requirenment files
 

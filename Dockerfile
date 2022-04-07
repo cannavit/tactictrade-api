@@ -1,7 +1,6 @@
 # FROM python:3.9-slim
 FROM python:3.9.9
 
-
 # who is the maintainer/author of this file
 LABEL org.opencontainers.image.authors="PAYALSASMAL, cecilio.cannav@gmail.com"
 
