@@ -55,7 +55,7 @@ Delete all the migrations
 
 #### Django utils documentation
 
-    [Django Rest Framework](https://www.django-rest-framework.org/api-guide/authentication/)
+[Django Rest Framework](https://www.django-rest-framework.org/api-guide/authentication/)
     
 
 ## Backend Content
