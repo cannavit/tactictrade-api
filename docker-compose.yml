@@ -1,0 +1,47 @@
+# For more information: https://laravel.com/docs/sail
+version: '3.5'
+services:
+  php:
+    image: fantaking-backend:latest
+    restart: always
+    ports:
+      - 8000:80
+    environment:
+      - DJANGO_ENV="YmFzZTY0OnB1eUF6WDk4anRzVksrMWpTV0VUT2lVTkFmOUVRVE1NaDkxd3dnNVRMVDA9Cg=="
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_PORT=3306
+      - DB_HOST=mysql
+      - DB_DATABASE
+      - DB_USERNAME
+      - DB_PASSWORD
+    volumes:
+        - '.:/var/www/html'
+    depends_on:
+        - mysql
+        - redis
+  mysql:
+    image: mysql:5.7
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+  redis:
+      image: 'redis:alpine'
+      ports:
+          - '${FORWARD_REDIS_PORT:-6379}:6379'
+      volumes:
+          - 'sail-redis:/data'
+      healthcheck:
+        test: ["CMD", "redis-cli", "ping"]
+        retries: 3
+        timeout: 5s
+
+
+
+volumes:
+
+    sail-redis:
+        driver: local

@@ -1,0 +1,9 @@
+[run]
+source=trading/
+omit=
+    venv
+    */migrations/*
+    */tests/*
+    */__init__.py
+    strategy/*
+    authentication/*

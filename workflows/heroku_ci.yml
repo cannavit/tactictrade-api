@@ -1,0 +1,82 @@
+# Your workflow name.
+name: Deploy to heroku.
+
+# Run workflow on every push to master branch.
+on:
+  push:
+    branches: [staging-v2]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create the .env File 
+        run: echo "${{secrets.ENV_STAGING }}" | base64 --decode > .env    
+      - uses: actions/checkout@v2
+      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }} #Must be unique in Heroku
+          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          usedocker: true
+
+# # Your workflows jobs.
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       # Check-out your repository.
+#       - name: Checkout
+#         uses: actions/checkout@v2
+
+#       - name: Create the .env File 
+#         run: echo "${{secrets.ENV_STAGING }}" | base64 --decode > .env
+
+#       - name: Build, Push and Release a Docker container to Heroku. # Your custom step name
+#         uses: gonuit/heroku-docker-deploy@v1.3.3 # GitHub action name (leave it as it is).
+#         with:
+#           email: ${{ secrets.HEROKU_EMAIL }}
+          
+#           heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          
+#           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }}
+
+#           dockerfile_directory: ./
+
+#           dockerfile_name: Dockerfile
+
+#           docker_options: "--no-cache"
+
+#           process_type: web
+          
+   
+# env:
+#   HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+#   APP_NAME: ${{ secrets.HEROKU_APP_NAME }}
+#   HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+
+# jobs:
+#   deploy:
+#     name: Deploy to Heroku
+#     runs-on: ubuntu-18.04
+#     steps:
+   
+#     # Clone the repository
+#     - name: Checkout
+#       uses: actions/checkout@v2
+
+#     - name: Create the .env File 
+#       run: echo "${{secrets.ENV_STAGING }}" | base64 --decode > .env
+
+#     - name: check content 
+#       run: ls -a        
+
+#     # Build Docker image
+#     - name: Docker build
+#       run: docker login --username=$HEROKU_EMAIL --password=$HEROKU_API_KEY registry.heroku.com
+
+#     # Push the Docker image to Heroku Container Registry
+#     - name: Publish
+#       run: |
+#         heroku container:push web -a $APP_NAME
+#         heroku container:release web -a $APP_NAME
