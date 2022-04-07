@@ -29,41 +29,29 @@ Run unit test suite
 
     coverage run manage.py test  && coverage report && coverage html
 
+or    
+
     coverage run  --source="strategy" manage.py test -v 2 && coverage report && coverage html
 
 
+## Migrate to new db
 
-### Create the requirenment files
-
-    pip freeze > requirements.txt
-### Create python environment
-
-    # Create new python env
-    virtualenv venv
-    
-
-    # Active the environment
-    source venv/bin/activate
-
-    deactivate
-
-    # Install dependencies
-    pip install -r requirements.txt
-
-    
-### Helpers 
-#### Documentation
-
-    Django Rest Framework
-    https://www.django-rest-framework.org/api-guide/authentication/
-
-
-### Django Principal Commands
-
-    
-    python manage.py runserver
     python manage.py migrate
 
+## Create migrations 
+
+    python manage.py makemigrations
+    
+## Utils 
+
+Export libraries for requirements_new
+
+    pip freeze > requirements_new.txt
+
+#### Django utils documentation
+
+    [Django Rest Framework](https://www.django-rest-framework.org/api-guide/authentication/)
+    
 
 ## Backend Content
 
