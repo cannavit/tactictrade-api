@@ -1,0 +1,29 @@
+version: '3'
+services:
+  mongoM1:
+    image: arm64v8/mongo
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_SERVER: admin
+      MONGO_INITDB_DATABASE: admin
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    volumes:
+      - mongodb:/data/db
+
+  mongo:
+    image: arm64v8/mongo
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_SERVER: admin
+      MONGO_INITDB_DATABASE: admin
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    volumes:
+      - mongodb:/data/db
+
+
+volumes:
+ mongodb:

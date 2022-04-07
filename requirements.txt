@@ -29,3 +29,5 @@ yahoo-fin==0.8.9.1
 # Library for testing 
 coverage
 apscheduler
+
+

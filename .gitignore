@@ -283,3 +283,5 @@ venv
 
 /.env.development
 .env.development
+
+htmlcov

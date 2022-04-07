@@ -185,20 +185,8 @@ TEMPLATES = [
 
 
 CSRF_COOKIE_DOMAIN = ['herokuapp.com']
-
 WSGI_APPLICATION = 'backend.wsgi.application'
-
-print(' DB DATA >>>> ----------------------------- ')
-print()
-print(env('DB_NAME'))
-print(env('DB_HOST'))
-print(env('DB_USERNAME'))
-print(env('DB_PASSWORD'))
-print()
-print(' << DB DATA -------------------------------- ')
-
 DB_NAME = env('DB_NAME')
-
 
 if env('DB_HOST').find('mongodb+srv') == -1:
 
@@ -261,9 +249,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'static'),
-)
+# STATICFILES_DIRS = (
+#     os.path.join(BASE_DIR, 'static'),
+# )
 
 
 STATIC_ROOT = str(BASE_DIR.joinpath('staticfiles'))

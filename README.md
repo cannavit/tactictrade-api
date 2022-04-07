@@ -11,6 +11,27 @@ Active the python environment
 
     source venv/bin/activate
 
+Run the MongoDB using docker-compose
+
+### For Chip M1. 
+
+    docker-compose up -d mongoM1
+### For normals chips
+
+    docker-compose up -d mongo
+
+
+Run project 
+
+    python manage.py runserver
+
+Run unit test suite
+
+    coverage run manage.py test  && coverage report && coverage html
+
+    coverage run  --source="strategy" manage.py test -v 2 && coverage report && coverage html
+
+
 
 ### Create the requirenment files
 
@@ -124,10 +145,6 @@ find . -path "*/migrations/*.pyc"  -delete
 
 gunicorn backend.wsgi:application --bind 0.0.0.0:8000
 
-
-https://tute.io/how-to-serve-scaled-images-with-django-rest-framework-and-django-imagekit
-
-
 # ENCRIPT FILE
 openssl base64 -in .env.staging
 
@@ -142,11 +159,6 @@ heroku config -s -a django-backend-steging > env.stagingv2
 export DJANGO_ENV=stagingv2
 
 
-## Run Unit Test With 
-
-    coverage run manage.py test  && coverage report && coverage html
-
-    coverage run  --source="strategy" manage.py test -v 2 && coverage report && coverage html
 
 python manage.py test backend --with-coverage
 
