@@ -48,6 +48,11 @@ Export libraries for requirements_new
 
     pip freeze > requirements_new.txt
 
+Delete all the migrations
+
+    find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+    find . -path "*/migrations/*.pyc"  -delete
+
 #### Django utils documentation
 
     [Django Rest Framework](https://www.django-rest-framework.org/api-guide/authentication/)
@@ -94,6 +99,8 @@ Export libraries for requirements_new
 
 
 
+
+
 release: python manage.py makemigrations
 release: python manage.py migrate
 web: python manage.py runserver 0.0.0.0:$PORT
@@ -115,9 +122,7 @@ web: gunicorn backend.wsgi
     "position_size": "{{strategy.position_size}}"
 }
 
-# Delete migrations
-find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
-find . -path "*/migrations/*.pyc"  -delete
+
 
 
 ### Deploy in la playstore: 
