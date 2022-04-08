@@ -11,7 +11,7 @@ from django.conf import settings
 
 schema_view = get_schema_view2(
     openapi.Info(
-        title="Project Name [Api Docs]",
+        title="TacticTrade [Api Docs]",
         default_version='v1',
     ),
     public=True,
@@ -25,17 +25,16 @@ router = routers.DefaultRouter()
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('settings/', include('setting.api.urls')),
-    path('account/', include('authentication.api.urls')),
-    path('trading/', include('trading.urls')),
-    path('strategy/', include('strategy.api.urls')),
-    path('broker/', include('broker.api.urls')),
-    path('social_auth/', include('social_auth.urls')),
-    path('transactions/', include('transaction.urls')),
+    path('account/', include('apps.authentication.api.urls')),
+    path('trading/', include('apps.trading.urls')),
+    path('strategy/', include('apps.strategy.api.urls')),
+    path('broker/', include('apps.broker.api.urls')),
+    path('social_auth/', include('apps.social_auth.urls')),
+    path('transactions/', include('apps.transaction.urls')),
 
     
-
     path('', include(router.urls)),
-    path('api_schema/', get_schema_view(title='Project Name',
+    path('api_schema/', get_schema_view(title='TacticTrade Apis',
          description='REST API Documentation'), name='api_schema'),
     path('docs/', schema_view.with_ui('swagger',
          cache_timeout=0), name='schema-swagger-ui'),

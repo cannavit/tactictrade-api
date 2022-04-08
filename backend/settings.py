@@ -36,32 +36,17 @@ environ.Env.read_env(os.path.join(BASE_DIR, ENV_FILE))
 # DEBUG=eval(env('DEBUG'))
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-# Initialise environment variables
-
-
 # Take environment variables from .env file
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 AUTH_USER_MODEL = 'authentication.User'
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-)08%828jjep%hpdilb*cs$^^2y1)hf(hl2w-5c843dwq4pj^2h'
 MASTER_KEY = env('MASTER_KEY')
 TEST_KEY = env('TEST_KEY')
-
-print(DJANGO_ENV)
-
-# HEROKU ERROR
-
-# SECRET_KEY = os.getenv('SECRET_KEY', 'change-in-production')j
-
-# SECURITY WARNING: don't run with debug turned on in production!
-# DEBUG = True
 
 ALLOWED_HOSTS = [
                  '.herokuapp.com',
@@ -85,18 +70,17 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework',
     'rest_framework_swagger',
-    'authentication',
-    'setting',
     'drf_yasg2',
     'gridfs_storage',
-    'strategy',
-    'symbol_trading',
     'django_filters',
     'drf_multiple_model',
-    'broker',
-    'gunicorn',
-    'trading',
-    'transaction',
+    'gunicorn',    
+    'apps.authentication',
+    'apps.setting',
+    'apps.strategy',
+    'apps.trading',
+    'apps.transaction',
+    'apps.broker',
 ]
 
 # SCHEDULER
@@ -170,6 +154,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
+
         ],
         'APP_DIRS': True,
         'OPTIONS': {

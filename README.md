@@ -41,7 +41,25 @@ or
 ## Create migrations 
 
     python manage.py makemigrations
-    
+
+
+## Create superuser
+
+    python manage.py createsuperuser
+## Run app 
+
+    python manage.py runserver
+
+### Available URL
+
+URL admin in your localhost
+
+    http://localhost:8000/admin/
+
+URL APis documentation 
+
+    http://localhost:8000/docs/
+
 ## Utils 
 
 Export libraries for requirements_new

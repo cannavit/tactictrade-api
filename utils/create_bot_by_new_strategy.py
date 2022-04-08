@@ -1,11 +1,13 @@
-from authentication.api.serializers import RegisterSerializer
-from broker.models import broker
-from trading.models import trading_config
-from authentication.models import User
-from broker.utils.init_broker import InitData
-from strategy.models import strategyNews
 import random
 import string
+
+from apps.authentication.api.serializers import RegisterSerializer
+from apps.authentication.models import User
+from apps.broker.models import broker
+from apps.broker.utils.init_broker import InitData
+from apps.strategy.models import strategyNews
+from apps.trading.models import trading_config
+
 
 def random_char(y):
     return ''.join(random.choice(string.ascii_letters) for x in range(y))
