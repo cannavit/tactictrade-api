@@ -71,8 +71,8 @@ Run app using gunicorn
 | JWT                     | 🟢     | Json Web Token Access                 |
 | Configuration of environment variables | 🟢     | Save Backend inside of the backend    |
 | Custom User Model       | 🟢   | Save Backend inside of the backend    |
-| Upload Image in DB      | Pending     | Save Backend inside of the backend    |
-| ServerLess with Heroku      | Pending     | Serverless deploy using heroku    |
+| Upload Image in DB      |  🟢      | Save Backend inside of the backend    |
+| ServerLess with Heroku      |  🟢      | Serverless deploy using heroku    |
 
 
 
