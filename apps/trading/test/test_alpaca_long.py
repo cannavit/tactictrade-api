@@ -5,15 +5,20 @@ import time
 
 import alpaca_trade_api as tradeapi
 import requests
-from authentication.api.serializers import (LoginSerializer,
-                                            RegisterSerializer,
-                                            UserSocialSerializer)
-from authentication.api.views import LoginAPIView, RegisterViewSet
-from authentication.models import User
-from broker.api.views import (alpacaConfigurationSerializersView,
-                              brokerSerializersView)
+from apps.authentication.api.serializers import (LoginSerializer,
+                                                 RegisterSerializer,
+                                                 UserSocialSerializer)
+from apps.authentication.api.views import LoginAPIView, RegisterViewSet
+from apps.authentication.models import User
+from apps.broker.api.views import (alpacaConfigurationSerializersView,
+                                   brokerSerializersView)
 # Create test for createStrategy
-from broker.models import broker as broker_model
+from apps.broker.models import broker as broker_model
+from apps.strategy.api.views import PostSettingAPIview
+from apps.strategy.models import symbolStrategy
+from apps.trading.views import (strategyView, tradingConfigGetAllViews,
+                                tradingConfigSlugViews, tradingConfigViews)
+from apps.transaction.models import transactions
 # import settings.
 # Get Configuration from django settings
 from django.conf import settings
@@ -25,10 +30,6 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import (APIClient, APIRequestFactory, APITestCase,
                                  force_authenticate)
-from strategy.api.views import PostSettingAPIview
-from strategy.models import symbolStrategy
-from trading.views import strategyView, tradingConfigGetAllViews, tradingConfigSlugViews, tradingConfigViews
-from transaction.models import transactions
 from utils.brokers import broker_alpaca
 from utils.by_tests.select_test_material import trading_random_image
 

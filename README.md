@@ -93,4 +93,7 @@ Run app using gunicorn
 | ServerLess with Heroku      |  🟢      | Serverless deploy using heroku    |
 
 
+## Link for use collaborative Postman collection
+
+    https://app.getpostman.com/join-team?invite_code=1385e8c0fa4028b6dd4a1f5aba276df5&target_code=68e4a0ff2d9a909547c1d23201a7de20
 
