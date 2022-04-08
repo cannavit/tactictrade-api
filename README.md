@@ -1,6 +1,6 @@
 # TacticTrade Backend
 
-This project is for algorithmic and collaborative trading.
+This project is for use algorithmic collaborative trading.
 ## Steps for run the project in the localhost
 
 Create the python environment
