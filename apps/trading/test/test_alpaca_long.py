@@ -254,197 +254,197 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
 
         self.assertEqual(brokerNumbers, 2)
 
-    def test_trading_long(self):
+    # def test_trading_long(self):
 
-        #!  Create Strartegy
-        symbol = 'ETHUSD'
-        self.body['symbol'] = symbol
+    #     #!  Create Strartegy
+    #     symbol = 'ETHUSD'
+    #     self.body['symbol'] = symbol
 
-        response_create_strategy = functionalities.create_strategy(
-            symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
+    #     response_create_strategy = functionalities.create_strategy(
+    #         symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
 
-        response_strategyNews = response_create_strategy.data
-        strategyNewsId = response_strategyNews['data']['strategyNewsId']
-        self.assertEqual(response_create_strategy.status_code,
-                         status.HTTP_200_OK)
+    #     response_strategyNews = response_create_strategy.data
+    #     strategyNewsId = response_strategyNews['data']['strategyNewsId']
+    #     self.assertEqual(response_create_strategy.status_code,
+    #                      status.HTTP_200_OK)
 
-        # ? Create Broker
-        #! Create Alpaca Broker.  alpaca
-        response_create_broker = functionalities.create_broker(
-            self.token_access)
+    #     # ? Create Broker
+    #     #! Create Alpaca Broker.  alpaca
+    #     response_create_broker = functionalities.create_broker(
+    #         self.token_access)
 
-        #! Response Create Trading Config
-        broker_id = response_create_broker.data['results']['id']
+    #     #! Response Create Trading Config
+    #     broker_id = response_create_broker.data['results']['id']
 
-        response_trading_config = functionalities.create_trading_config(
-            strategy_id=strategyNewsId,
-            broker_id=broker_id,
-            token_access=self.token_access)
+    #     response_trading_config = functionalities.create_trading_config(
+    #         strategy_id=strategyNewsId,
+    #         broker_id=broker_id,
+    #         token_access=self.token_access)
 
-        self.assertEqual(
-            response_trading_config.status_code, status.HTTP_201_CREATED)
+    #     self.assertEqual(
+    #         response_trading_config.status_code, status.HTTP_201_CREATED)
 
-        #! Build the body for create trading operation
-        body_open_transaction = response_create_strategy.create_trade_body
+    #     #! Build the body for create trading operation
+    #     body_open_transaction = response_create_strategy.create_trade_body
 
-        #! Create Buy Alpaca-Broker Transaction trade_push_with_strategy
-        response_create_trade = functionalities.create_trade(
-            body_open_transaction, 'buy')
+    #     #! Create Buy Alpaca-Broker Transaction trade_push_with_strategy
+    #     response_create_trade = functionalities.create_trade(
+    #         body_open_transaction, 'buy')
 
-        long_opened = response_create_trade.data['data']['long']['transaction_opened']
-        # ? Check if the transaction is opened
-        self.assertEqual(long_opened > 0, True)
-        # ? Verify if the long operation was open
-        self.assertEqual(
-            response_create_trade.status_code, status.HTTP_200_OK)
+    #     long_opened = response_create_trade.data['data']['long']['transaction_opened']
+    #     # ? Check if the transaction is opened
+    #     self.assertEqual(long_opened > 0, True)
+    #     # ? Verify if the long operation was open
+    #     self.assertEqual(
+    #         response_create_trade.status_code, status.HTTP_200_OK)
 
-        # Get symbol data
-        symbol_data = functionalities.get_symbol(symbol)
+    #     # Get symbol data
+    #     symbol_data = functionalities.get_symbol(symbol)
 
-        transaction = transactions.objects.filter(
-            owner_id=self.user.id,
-            strategyNews_id=strategyNewsId,
-            broker_id=broker_id,
-            symbol_id=symbol_data.id,
-            isClosed__in=[False]
-        ).order_by('-id')
+    #     transaction = transactions.objects.filter(
+    #         owner_id=self.user.id,
+    #         strategyNews_id=strategyNewsId,
+    #         broker_id=broker_id,
+    #         symbol_id=symbol_data.id,
+    #         isClosed__in=[False]
+    #     ).order_by('-id')
 
-        transaction_count = transaction.count()
-        transaction_values = transaction.values()[0]
+    #     transaction_count = transaction.count()
+    #     transaction_values = transaction.values()[0]
 
-        # ? Validate if exist one transaction
-        self.assertEqual(transaction_count > 0, True)
-        self.assertEqual(transaction_values['order'], 'buy')
-        self.assertEqual(transaction_values['operation'], 'long')
+    #     # ? Validate if exist one transaction
+    #     self.assertEqual(transaction_count > 0, True)
+    #     self.assertEqual(transaction_values['order'], 'buy')
+    #     self.assertEqual(transaction_values['operation'], 'long')
 
-        #! Check if idTransaction is equal to alpaca id
-        alpaca_orders = self.api.get_order(transaction_values['idTransaction'])
-        self.assertEqual(alpaca_orders.id, transaction_values['idTransaction'])
+    #     #! Check if idTransaction is equal to alpaca id
+    #     alpaca_orders = self.api.get_order(transaction_values['idTransaction'])
+    #     self.assertEqual(alpaca_orders.id, transaction_values['idTransaction'])
 
-        #! Close the transation
-        response_trading_strategy = functionalities.create_trade(
-            body_open_transaction, 'sell')
-        # ? Verify the code 200
-        self.assertEqual(
-            response_trading_strategy.status_code, status.HTTP_200_OK)
+    #     #! Close the transation
+    #     response_trading_strategy = functionalities.create_trade(
+    #         body_open_transaction, 'sell')
+    #     # ? Verify the code 200
+    #     self.assertEqual(
+    #         response_trading_strategy.status_code, status.HTTP_200_OK)
 
-        response_trading_strategy_data = response_trading_strategy.data['data']
-        long_closed = response_trading_strategy_data['long']['transaction_closed']
-        # ? Check if was close the transaction
-        self.assertTrue(long_closed > 0)
+    #     response_trading_strategy_data = response_trading_strategy.data['data']
+    #     long_closed = response_trading_strategy_data['long']['transaction_closed']
+    #     # ? Check if was close the transaction
+    #     self.assertTrue(long_closed > 0)
 
-        #! Get List of orders with alpaca api
-        transaction_closed = transactions.objects.filter(
-            owner_id=self.user.id,
-            strategyNews_id=strategyNewsId,
-            broker_id=broker_id,
-            symbol_id=symbol_data.id,
-        ).order_by('-id')
+    #     #! Get List of orders with alpaca api
+    #     transaction_closed = transactions.objects.filter(
+    #         owner_id=self.user.id,
+    #         strategyNews_id=strategyNewsId,
+    #         broker_id=broker_id,
+    #         symbol_id=symbol_data.id,
+    #     ).order_by('-id')
 
-        transaction_closed_values = transaction_closed.values()[0]
-        transaction_closed_values_profit = transaction_closed_values['profit']
+    #     transaction_closed_values = transaction_closed.values()[0]
+    #     transaction_closed_values_profit = transaction_closed_values['profit']
 
-        alpaca_list_order = self.api.list_orders(
-            status='closed',
-            limit=2,
-            nested=True
-        )
+    #     alpaca_list_order = self.api.list_orders(
+    #         status='closed',
+    #         limit=2,
+    #         nested=True
+    #     )
 
-        amount_closed_open = float(
-            alpaca_list_order[1]._raw['filled_avg_price']) * float(alpaca_list_order[1]._raw['filled_qty'])
-        amount_closed_closd = float(
-            alpaca_list_order[0]._raw['filled_avg_price']) * float(alpaca_list_order[0]._raw['filled_qty'])
-        profit_alpaca_long = amount_closed_closd - amount_closed_open
+    #     amount_closed_open = float(
+    #         alpaca_list_order[1]._raw['filled_avg_price']) * float(alpaca_list_order[1]._raw['filled_qty'])
+    #     amount_closed_closd = float(
+    #         alpaca_list_order[0]._raw['filled_avg_price']) * float(alpaca_list_order[0]._raw['filled_qty'])
+    #     profit_alpaca_long = amount_closed_closd - amount_closed_open
 
 
-    def test_trading_config_edit(self):
+    # def test_trading_config_edit(self):
 
-        # * Preporesing test
-        #!  Create Strartegy
-        symbol = 'ETHUSD'
-        self.body['symbol'] = symbol
+    #     # * Preporesing test
+    #     #!  Create Strartegy
+    #     symbol = 'ETHUSD'
+    #     self.body['symbol'] = symbol
 
-        response_create_strategy = functionalities.create_strategy(
-            symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
+    #     response_create_strategy = functionalities.create_strategy(
+    #         symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
 
-        response_strategyNews = response_create_strategy.data
-        strategyNewsId = response_strategyNews['data']['strategyNewsId']
-        self.assertEqual(response_create_strategy.status_code,
-                         status.HTTP_200_OK)
+    #     response_strategyNews = response_create_strategy.data
+    #     strategyNewsId = response_strategyNews['data']['strategyNewsId']
+    #     self.assertEqual(response_create_strategy.status_code,
+    #                      status.HTTP_200_OK)
 
-        # ? Create Broker
-        #! Create Alpaca Broker.  alpaca
-        response_create_broker = functionalities.create_broker(
-            self.token_access)
+    #     # ? Create Broker
+    #     #! Create Alpaca Broker.  alpaca
+    #     response_create_broker = functionalities.create_broker(
+    #         self.token_access)
 
-        #! Response Create Trading Config
-        broker_id = response_create_broker.data['results']['id']
+    #     #! Response Create Trading Config
+    #     broker_id = response_create_broker.data['results']['id']
 
-        response_trading_config = functionalities.create_trading_config(
-            strategy_id=strategyNewsId,
-            broker_id=broker_id,
-            token_access=self.token_access)
+    #     response_trading_config = functionalities.create_trading_config(
+    #         strategy_id=strategyNewsId,
+    #         broker_id=broker_id,
+    #         token_access=self.token_access)
 
-        self.assertEqual(
-            response_trading_config.status_code, status.HTTP_201_CREATED)
+    #     self.assertEqual(
+    #         response_trading_config.status_code, status.HTTP_201_CREATED)
 
-        # * Test edit trading config using one custom body.
-        trading_config_id = response_trading_config.data['data']['id']
+    #     # * Test edit trading config using one custom body.
+    #     trading_config_id = response_trading_config.data['data']['id']
 
-        #! Save only one parameters
-        body = {
-            "is_active_short": True,
-            # "is_active_long": False
-        }
+    #     #! Save only one parameters
+    #     body = {
+    #         "is_active_short": True,
+    #         # "is_active_long": False
+    #     }
 
-        factory = APIRequestFactory()
-        url = reverse('tradingValue_edit', kwargs={'slug': trading_config_id})
+    #     factory = APIRequestFactory()
+    #     url = reverse('tradingValue_edit', kwargs={'slug': trading_config_id})
 
-        request = factory.put(url, body, format='json',
-                              HTTP_AUTHORIZATION='Bearer {}'.format(self.token_access))
+    #     request = factory.put(url, body, format='json',
+    #                           HTTP_AUTHORIZATION='Bearer {}'.format(self.token_access))
 
-        response = tradingConfigSlugViews.as_view()(request, slug=trading_config_id)
+    #     response = tradingConfigSlugViews.as_view()(request, slug=trading_config_id)
 
-        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+    #     self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
 
-        #! Save all data
+    #     #! Save all data
 
-        body_full_data = {
-            "quantityUSDLong": 600,
-            "useLong": True,
-            "stopLossLong": -5,
-            "takeProfitLong": 10,
-            "consecutiveLossesLong": 3,
-            "quantityUSDShort": 500,
-            "useShort": True,
-            "stopLossShort": -5,
-            "takeProfitShort": 0,
-            "consecutiveLossesShort": 3,
-            "is_active": True,
-            "is_active_short": True,
-            "is_active_long": True,
-            "close_trade_long_and_deactivate": True,
-            "close_trade_short_and_deactivate": True
-        }
+    #     body_full_data = {
+    #         "quantityUSDLong": 600,
+    #         "useLong": True,
+    #         "stopLossLong": -5,
+    #         "takeProfitLong": 10,
+    #         "consecutiveLossesLong": 3,
+    #         "quantityUSDShort": 500,
+    #         "useShort": True,
+    #         "stopLossShort": -5,
+    #         "takeProfitShort": 0,
+    #         "consecutiveLossesShort": 3,
+    #         "is_active": True,
+    #         "is_active_short": True,
+    #         "is_active_long": True,
+    #         "close_trade_long_and_deactivate": True,
+    #         "close_trade_short_and_deactivate": True
+    #     }
 
-        factory = APIRequestFactory()
-        url = reverse('tradingValue_edit', kwargs={'slug': trading_config_id})
+    #     factory = APIRequestFactory()
+    #     url = reverse('tradingValue_edit', kwargs={'slug': trading_config_id})
 
-        request = factory.put(url, body_full_data, format='json',
-                              HTTP_AUTHORIZATION='Bearer {}'.format(self.token_access))
+    #     request = factory.put(url, body_full_data, format='json',
+    #                           HTTP_AUTHORIZATION='Bearer {}'.format(self.token_access))
 
-        response = tradingConfigSlugViews.as_view()(request, slug=trading_config_id)
+    #     response = tradingConfigSlugViews.as_view()(request, slug=trading_config_id)
 
-        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+    #     self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
 
-        #! Control of bad request
+    #     #! Control of bad request
 
-        factory = APIRequestFactory()
-        url = reverse('tradingValue_edit', kwargs={'slug': 100})
+    #     factory = APIRequestFactory()
+    #     url = reverse('tradingValue_edit', kwargs={'slug': 100})
 
-        request = factory.put(url, body_full_data, format='json',
-                              HTTP_AUTHORIZATION='Bearer {}'.format(self.token_access))
+    #     request = factory.put(url, body_full_data, format='json',
+    #                           HTTP_AUTHORIZATION='Bearer {}'.format(self.token_access))
 
-        response = tradingConfigSlugViews.as_view()(request, slug=100)
+    #     response = tradingConfigSlugViews.as_view()(request, slug=100)
 
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)

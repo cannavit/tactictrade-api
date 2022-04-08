@@ -42,7 +42,6 @@ or
 
     python manage.py makemigrations
 
-
 ## Create superuser
 
     python manage.py createsuperuser
