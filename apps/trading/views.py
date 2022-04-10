@@ -13,7 +13,7 @@ from apps.broker.broker_short_papertrade import (broker_short_buy_papertrade,
 from apps.broker.brokers_connections.alpaca.long_buy import \
     broker as broker_alpaca
 from apps.broker.brokers_connections.paper_trade.long_buy import broker as papertrade
-
+from apps.broker.brokers_connections.paper_trade.short import broker as papertrade_short
 
 from apps.broker.models import broker
 
@@ -408,7 +408,6 @@ class strategyView(generics.GenericAPIView):
                 brokerCapital = tradingConfig.broker.capital
 
                 options = {
-                    "order": "buy",
                     "owner_id": follow.id,
                     "strategyNews_id": strategyNewsConfig.values()[0]['id'],
                     "quantityUSD": quantityUSD,
@@ -424,6 +423,8 @@ class strategyView(generics.GenericAPIView):
 
                 # Create one Long Trade
                 if data['order'] == 'buy' and tradingConfig.is_active_long == True:
+
+                    options.order = 'buy'
                     # Open Long Positions
                     if brokerName == "paperTrade":
                         # Open Long Trade [PAPERTRADE-BUY]
@@ -451,16 +452,18 @@ class strategyView(generics.GenericAPIView):
                     # Sell Short
                     if brokerName == "paperTrade":
                         # Open Short Trade [PAPERTRADE-SELL]
+
                         results = papertrade(
                             trading=tradingConfig,
                             strategy=strategyData,
                             operation='long'
-                        ).long_sell(
+                        ).close_position(
                             options=options,
                             results=results,
                         )
 
                     if brokerName == 'alpaca':
+
                         # CLOSE LONG TRADE [ALPACA-SELL]
                         results = broker_alpaca(
                             options=options,
@@ -470,53 +473,18 @@ class strategyView(generics.GenericAPIView):
                             operation='long'
                         ).close_position()
 
-                        # broker_close_trade_alpaca({
-                        #     "order": "sell",
-                        #     "owner_id": follow.id,
-                        #     "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                        #     "quantityUSD": quantityUSD,
-                        #     "use": use,
-                        #     "stopLoss": stopLoss,
-                        #     "takeProfit": takeProfit,
-                        #     "consecutiveLosses": consecutiveLosses,
-                        #     "brokerCapital": brokerCapital,
-                        #     "symbol": strategyData.symbol.symbolName_corrected
-                        # },
-                        #     strategyData,
-                        #     tradingConfig,
-                        #     results,
-                        #     operation='long'
-                        # )
-
                 if data['order'] == 'sell' and tradingConfig.is_active_short == True:
 
-                    quantityUSD = tradingConfig.quantityUSDShort
-                    use = tradingConfig.useShort
-                    stopLoss = tradingConfig.stopLossShort
-                    takeProfit = tradingConfig.takeProfitShort
-                    consecutiveLosses = tradingConfig.consecutiveLossesShort
-                    brokerName = tradingConfig.broker.broker
-                    brokerCapital = tradingConfig.broker.capital
-                    isPaperTrading = tradingConfig.is_paper_trading
+                    options.order = 'sell'
 
                     if brokerName == "paperTrade":
 
-                        broker_short_sell_papertrade({
-                            "order": "sell",
-                            "owner_id": follow.id,
-                            "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                            "quantityUSD": quantityUSD,
-                            "use": use,
-                            "stopLoss": stopLoss,
-                            "takeProfit": takeProfit,
-                            "consecutiveLosses": consecutiveLosses,
-                            "brokerCapital": brokerCapital,
-                            "symbol": strategyData.symbol.symbolName_corrected
-                        },
-                            strategyData,
-                            tradingConfig,
-                            results
-                        )
+                        results = papertrade_short(
+                            trading=tradingConfig,
+                            strategy=strategyData,
+                            options=options,
+                            results=results
+                        ).short_buy()
 
                     if brokerName == 'alpaca':
 
@@ -537,34 +505,33 @@ class strategyView(generics.GenericAPIView):
                             results)
 
                 if data['order'] == 'buy' and tradingConfig.is_active_short == True:
-
-                    quantityUSD = tradingConfig.quantityUSDShort
-                    use = tradingConfig.useShort
-                    stopLoss = tradingConfig.stopLossShort
-                    takeProfit = tradingConfig.takeProfitShort
-                    consecutiveLosses = tradingConfig.consecutiveLossesShort
-                    brokerName = tradingConfig.broker.broker
-                    brokerCapital = tradingConfig.broker.capital
-                    isPaperTrading = tradingConfig.is_paper_trading
+                    options.order = 'buy'
 
                     if brokerName == "paperTrade":
+                        
+                        results = papertrade_short(
+                            trading=tradingConfig,
+                            strategy=strategyData,
+                            options=options,
+                            results=results
+                        ).close_position()
 
-                        broker_short_buy_papertrade({
-                            "order": "sell",
-                            "owner_id": follow.id,
-                            "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                            "quantityUSD": quantityUSD,
-                            "use": use,
-                            "stopLoss": stopLoss,
-                            "takeProfit": takeProfit,
-                            "consecutiveLosses": consecutiveLosses,
-                            "brokerCapital": brokerCapital,
-                            "symbol": strategyData.symbol.symbolName_corrected
-                        },
-                            strategyData,
-                            tradingConfig,
-                            results
-                        )
+                        # broker_short_buy_papertrade({
+                        #     "order": "sell",
+                        #     "owner_id": follow.id,
+                        #     "strategyNews_id": strategyNewsConfig.values()[0]['id'],
+                        #     "quantityUSD": quantityUSD,
+                        #     "use": use,
+                        #     "stopLoss": stopLoss,
+                        #     "takeProfit": takeProfit,
+                        #     "consecutiveLosses": consecutiveLosses,
+                        #     "brokerCapital": brokerCapital,
+                        #     "symbol": strategyData.symbol.symbolName_corrected
+                        # },
+                        #     strategyData,
+                        #     tradingConfig,
+                        #     results
+                        # )
 
                     if brokerName == 'alpaca':
                         broker_close_trade_alpaca({

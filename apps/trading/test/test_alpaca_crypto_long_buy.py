@@ -195,6 +195,8 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
         self.assertEqual(
             response_trading_strategy.status_code, status.HTTP_200_OK)
 
+            
+
     #     response_trading_strategy_data = response_trading_strategy.data['data']
     #     long_closed = response_trading_strategy_data['long']['transaction_closed']
     #     # ? Check if was close the transaction

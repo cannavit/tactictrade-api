@@ -153,11 +153,22 @@ class functionalities:
 
         return broker_data
 
-    def create_trade(body_token_strategy, trade_type='sell'):
+    def create_trade(body_token_strategy=None, trade_type='sell', token=None):
 
-        body_token_strategy['order'] = trade_type
+        if token:
+            body_token_strategy = {
+                "strategy": "Strategyargonv2",
+                "token": token,
+                "order": trade_type,
+                "contracts": "",
+                "ticker": "",
+                "position_size": ""
+            }
+        else:
+            body_token_strategy['order'] = trade_type
 
         factory = APIRequestFactory()
+        
         request = factory.post(
             reverse('trade_push_with_strategy'), body_token_strategy, format='json')
 
