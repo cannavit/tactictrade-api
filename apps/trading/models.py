@@ -4,6 +4,8 @@ from apps.strategy.models import strategyNews
 from apps.broker.models import broker
 from apps.transaction.models import transactions
 # Create your models here.
+from django.db.models.signals import  pre_save
+from django.dispatch import receiver
 
 class trading_config(models.Model):
 
@@ -15,13 +17,17 @@ class trading_config(models.Model):
 
     # Trading Long Parameters: 
     quantityUSDLong = models.FloatField(default=0, blank=True,null=True)
+    quantityQTYLong = models.FloatField(default=0, blank=True,null=True)
+
     useLong =  models.BooleanField(default=False, blank=True,null=True)
     stopLossLong = models.FloatField( null=True, blank=True, default=-3)
     takeProfitLong = models.FloatField( null=True, blank=True, default=10)
     consecutiveLossesLong = models.IntegerField( null=True, blank=True, default=3)
     
     # Trading Short Parameters:
-    quantityUSDShort = models.FloatField(default=0, blank=True,null=True )
+    quantityUSDShort = models.FloatField(default=0, blank=True,null=True)
+    quantityQTYShort = models.FloatField(default=0, blank=True,null=True)
+
     useShort =  models.BooleanField(default=False, blank=True,null=True)
     stopLossShort = models.FloatField( null=True, blank=True, default=-3)
     takeProfitShort = models.FloatField( null=True, blank=True, default=10)
@@ -34,6 +40,7 @@ class trading_config(models.Model):
     # Init Parameters
     initialCapitalUSDLong = models.FloatField(default=0, blank=True,null=True)
     initialCapitalUSDShort = models.FloatField(default=0, blank=True,null=True)
+    
     initialQuantityLong = models.FloatField(default=0, blank=True,null=True)
     initialQuantityShort = models.FloatField(default=0, blank=True,null=True)
 
@@ -83,3 +90,20 @@ class strategy(models.Model):
 
     def __str__(self):
         return self.strategy
+
+
+
+@receiver(pre_save, sender=trading_config)
+def pre(sender, instance, *args, **kwargs):
+
+    instance.initialCapitalUSDLong = instance.quantityUSDLong
+    instance.initialCapitalUSDShort = instance.quantityUSDShort
+    instance.initialCapitalQTYLong = instance.quantityQTYLong
+    instance.initialCapitalQTYShort = instance.quantityQTYShort
+    instance.winTradeLong = 0
+    instance.winTradeShort = 0
+    instance.closedTradeShort = 0
+    instance.closedTradeLong = 0
+    instance.profitPorcentageShort = 0
+    instance.profitPorcentageLong = 0
+

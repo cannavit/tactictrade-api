@@ -5,7 +5,7 @@ import alpaca_trade_api as tradeapi
 from apscheduler.schedulers.background import BackgroundScheduler
 # import django settings
 from django.conf import settings
-from utils.brokers.broker_alpaca import broker_alpaca
+from utils.brokers.broker_alpaca import broker_alpaca_lib
 from utils.calculate_porcentaje import pct_change
 from yahoo_fin import stock_info as si
 

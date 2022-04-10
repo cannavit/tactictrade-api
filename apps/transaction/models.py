@@ -80,8 +80,11 @@ class transactions(models.Model):
 
     isClosed = models.BooleanField(default=False, blank=False, null=False)
 
-    stop_loss = models.FloatField(default=-1, blank=True,null=True) 
+    stop_loss = models.FloatField(default=-1, blank=True,null=True)
+    stop_loss_qty = models.FloatField(default=-1, blank=True,null=True)
+
     take_profit = models.FloatField(default=-1, blank=True,null=True)
+    take_profit_qty = models.FloatField(default=-1, blank=True,null=True)
 
     is_winner = models.BooleanField(default=False)
 

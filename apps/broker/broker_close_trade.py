@@ -3,7 +3,7 @@ from yahoo_fin import stock_info as si
 
 from apps.broker.models import alpaca_configuration
 from apps.transaction.models import transactions
-from utils.brokers.broker_alpaca import broker_alpaca
+from utils.brokers.broker_alpaca import broker_alpaca_lib
 from utils.calculate_porcentaje import pct_change
 from utils.transform_strings.stringConvert import delete_char
 
@@ -99,11 +99,11 @@ def broker_close_trade_alpaca(options, strategy, trading, results, operation):
     if closeOperation:
         data = trasactionLast.values()[0]
         # Close position
-        responseAlpacaPosition = broker_alpaca(api, operation).get_position(
+        responseAlpacaPosition = broker_alpaca_lib(api, operation).get_position(
             id=data['idTransaction']
         )
 
-        responseAlpaca = broker_alpaca(api).close_position(
+        responseAlpaca = broker_alpaca_lib(api).close_position(
             id=data['idTransaction']
         )
 

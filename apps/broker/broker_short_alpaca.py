@@ -3,7 +3,7 @@ from yahoo_fin import stock_info as si
 
 from apps.broker.models import alpaca_configuration
 from apps.transaction.models import transactions
-from utils.brokers.broker_alpaca import broker_alpaca
+from utils.brokers.broker_alpaca import broker_alpaca_lib
 from utils.transform_strings.stringConvert import delete_char
 
 
@@ -35,7 +35,7 @@ def broker_sell_short_alpaca(options, strategy, trading, results):
 
     if trasactionLast.count() == 0: # Open The Transaction
 
-        responseAlpaca = broker_alpaca(api).open_short_trade(
+        responseAlpaca = broker_alpaca_lib(api).open_short_trade(
             symbol=symbol,
             qty=trading.initialCapitalUSDShort,
             notional=None,

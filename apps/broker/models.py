@@ -63,13 +63,16 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 
     elif instance.broker == 'alpaca':
 
-        instance.short_is_allowed = True
-        instance.short_allowed_fractional = True
         instance.long_is_allowed = True
+        instance.short_is_allowed = True
+        
+        instance.short_allowed_fractional = False 
         instance.long_allowed_fractional = True
+
         instance.short_is_allowed_crypto = False
-        instance.short_allowed_fractional_crypto = False
         instance.long_is_allowed_crypto = True
+                
+        instance.short_allowed_fractional_crypto = False
         instance.long_allowed_fractional_crypto = True
 
 
@@ -95,4 +98,4 @@ class alpaca_configuration(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     # def __str__(self):
-    # return self.broker.owner
+    # return self.broker.ownerp

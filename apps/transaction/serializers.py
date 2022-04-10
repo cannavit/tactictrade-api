@@ -5,7 +5,7 @@ from django.conf import settings
 # Import datetime
 from django.utils import timezone
 from rest_framework import serializers
-from utils.brokers.broker_alpaca import broker_alpaca
+from utils.brokers.broker_alpaca import broker_alpaca_lib
 from yahoo_fin import stock_info as si
 
 from apps.authentication.models import User
@@ -92,7 +92,7 @@ class TransactionSelectSerializers(serializers.ModelSerializer):
             api = tradeapi.REST(alpacaBroker.APIKeyID,
                                 alpacaBroker.SecretKey, alpacaBroker.endpoint)
 
-            data = broker_alpaca(api, type=instance.operation).get_position(
+            data = broker_alpaca_lib(api, type=instance.operation).get_position(
                 id=instance.idTransaction)
 
             if data['status'] == 'canceled':

@@ -13,6 +13,8 @@ class symbolStrategy(models.Model):
     image = models.ImageField(upload_to='symbol/', null=True, blank=True)
     url = models.URLField(max_length=200, blank=True, null=True)
 
+    is_crypto = models.BooleanField(default=False)
+
     def __str__(self):
         return self.symbolName
 
@@ -36,6 +38,7 @@ class strategyNews(models.Model):
 
     symbol = models.ForeignKey(
         to=symbolStrategy, on_delete=models.CASCADE, blank=True, null=False)
+
     pusher = models.CharField(
         choices=STRATEGY_PUSH, default='tradingview', null=True, blank=True, max_length=60)
 
@@ -51,6 +54,7 @@ class strategyNews(models.Model):
 
     max_drawdown = models.FloatField(default=0, null=False, blank=False)
     profit_factor = models.FloatField(default=0, null=False, blank=False)
+
     # ? Automatic stadistic strategy
     is_verified = models.BooleanField(default=False)
     net_profit_verified = models.FloatField(default=0, null=True, blank=True)
@@ -71,8 +75,8 @@ class strategyNews(models.Model):
 
     description = models.TextField(max_length=600, null=True, blank=True)
     post_image = models.ImageField(upload_to='strategy_post_image', blank=True)
-    
-    # Define Url Image 
+
+    # Define Url Image
     url_image = models.URLField(blank=True, null=True, default='')
 
     likes = models.ManyToManyField(User, blank=True)
@@ -83,7 +87,6 @@ class strategyNews(models.Model):
 
     email_bot = models.CharField(
         blank=True, null=True, max_length=60, default="")
-        
 
     def __str__(self):
         return self.strategyNews

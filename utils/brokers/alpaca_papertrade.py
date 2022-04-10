@@ -10,15 +10,15 @@ class papertrade_alpaca():
         self.type = type
 
     def long_buy(self, symbol, qty=None, national=None):
-        
+
         print('SYMBOL: ', symbol)
         print('QTY: ', qty)
         print('NATIONAL: ', national)
 
-        # Close all old operations 
+        # Close all old operations
         broker_alpaca(self.api).close_all_positions_opened()
 
-        response = broker_alpaca(self.api).open_long_trade(symbol=symbol, qty=qty)
+        response = broker_alpaca(self.api).long_buy(symbol=symbol, qty=qty)
 
         response_opened = response['response']
         print(response_opened.id)
@@ -37,7 +37,7 @@ api = tradeapi.REST(APIKeyID, SecretKey, endpoint)
 papertrade_alpaca(api).long_buy(symbol='SOLUSD', qty=1, national=1000)
 
 
-# response = broker_alpaca(api).open_long_trade(
+# response = broker_alpaca(api).long_buy(
 #     symbol='ETHUSD',
 #     # qty=1,
 #     notional=400,

@@ -5,6 +5,9 @@ from alpaca_trade_api.rest import REST, TimeFrame
 from yahoo_fin import stock_info as si
 import json
 
+from utils.convert_json_to_objects import convertJsonToObject
+
+
 
 def close_orders_opened(api, SYMBOL):
 
@@ -17,23 +20,19 @@ def close_orders_opened(api, SYMBOL):
         responseList.append(response)
 
     return responseList
- 
 
-class broker_alpaca:
 
-    def __init__(self, api, type=None):
+class broker_alpaca_lib:
+
+    def __init__(self, api, type=None, symbol=None, price=None):
 
         self.api = api
         self.type = type
+        self.symbol = symbol
 
-    def get_open_positions(self, id):
-
-        print(id)
-
-        orders = self.api.list_orders(status='open', limit=100, nested=True)
-
-        print(orders)
-
+        self.price = price
+        if price == None:
+            self.prince = si.get_live_price(symbol)
 
     def get_position(self, id):
 
@@ -100,9 +99,6 @@ class broker_alpaca:
         # Cancel all orders open related with that symbol
         response = close_orders_opened(self.api, symbol)
 
-
-
-
         if orders.side == 'buy':
             side = 'sell'
         elif orders.side == 'sell':
@@ -139,28 +135,21 @@ class broker_alpaca:
             'response': response
         }
 
-    def open_long_trade(self,
-                        symbol,
-                        qty=None,
-                        notional=None,
-                        stop_loss=None,
-                        stop_loss_porcent=None,
-                        take_profit=None,
-                        take_profit_porcent=None,
-                        price=None,
-                        ):
+    def long_buy(self,
+                 qty=None,
+                 notional=None,
+                 stop_loss=None,
+                 stop_loss_porcent=None,
+                 take_profit=None,
+                 take_profit_porcent=None,
+                 broker=None,
+                 ):
 
-        print("@Note-01 ---- -2013080413 -----")
-
-        if price is None:
-            try:
-                price = si.get_live_price(symbol)
-            except: 
-                price = -1
-                
         stop_loss_option = None
+
         if stop_loss_porcent is not None:
-            stop_loss = price - price * float(abs(stop_loss_porcent)) * 0.01
+            stop_loss = self.price - self.price * \
+                float(abs(stop_loss_porcent)) * 0.01
 
         if stop_loss is not None:
             stop_loss_option = dict(
@@ -170,7 +159,8 @@ class broker_alpaca:
 
         take_profit_option = None
         if take_profit_porcent is not None:
-            take_profit = price + price * float(take_profit_porcent) * 0.01
+            take_profit = self.price + self.price * \
+                float(take_profit_porcent) * 0.01
 
         if take_profit is not None:
             take_profit_option = dict(
@@ -179,11 +169,17 @@ class broker_alpaca:
 
         response = {}
 
+        if notional == 0.0:
+            notional = None
+
+        if qty == 0.0:
+            qty = None
+
         if take_profit_option is not None and stop_loss_option is not None:
 
             try:
                 response = self.api.submit_order(
-                    symbol=symbol,
+                    symbol=self.symbol,
                     side='buy',
                     type='market',
                     qty=qty,
@@ -196,24 +192,23 @@ class broker_alpaca:
             except Exception as e:
                 try:
                     response = self.api.submit_order(
-                    symbol=symbol,
-                    side='buy',
-                    type='market',
-                    qty=qty,
-                    notional=notional,
-                    time_in_force='day',
-                    order_class='simple',
-                    take_profit=take_profit_option,
-                    stop_loss=stop_loss_option
-                     )
+                        symbol=self.symbol,
+                        side='buy',
+                        type='market',
+                        qty=qty,
+                        notional=notional,
+                        time_in_force='day',
+                        order_class='simple',
+                        take_profit=take_profit_option,
+                        stop_loss=stop_loss_option
+                    )
                 except Exception as e:
                     print(e)
-
 
         elif take_profit_option is None and stop_loss_option is not None:
 
             response = self.api.submit_order(
-                symbol=symbol,
+                symbol=self.symbol,
                 side='buy',
                 type='market',
                 qty=qty,
@@ -234,7 +229,7 @@ class broker_alpaca:
         else:
 
             response = self.api.submit_order(
-                symbol=symbol,
+                symbol=self.symbol,
                 side='buy',
                 type='market',
                 qty=qty,
@@ -244,23 +239,20 @@ class broker_alpaca:
                 stop_loss=stop_loss_option
             )
 
-        test = response.get('status');
+        try:
+            if response.get('status') != 'accepted' or response.get('status') == None:
+                return {
+                    'status': 'error',
+                    'message': 'Not was possible to open the transaction in alpaca',
+                    'emisor': 'broker_alpaca',
+                    'response': response
+                }
+        except Exception as e:
+            print(e)
 
-        if response.get('status') != 'accepted' or response.get('status') == None:
-            return {
-                'status': 'error',
-                'message': 'Not was possible to open the transaction in alpaca',
-                'emisor': 'broker_alpaca',
-                'response': response
-            }
-
-        return {
-            'status': 'success',
-            'message': 'The operation was open in alpaca',
-            'emisor': 'broker_alpaca',
-            'data': {
+        data = {
                 'id': response.id,
-                'symbol': symbol,
+                'symbol': self.symbol,
                 'qty': qty,
                 'notional': notional,
                 'stop_loss': stop_loss,
@@ -268,9 +260,23 @@ class broker_alpaca:
                 'take_profit': take_profit,
                 'take_profit_porcent': take_profit_porcent,
                 'type': 'long'
-            },
-            'response': response
+            }
+        # Convert JSON to string
+
+        response = {
+            'status': 'success',
+            'message': 'The operation was open in alpaca',
+            'emisor': 'broker_alpaca',
+            'data': data,
+            # 'response': response
         }
+
+
+        # Convert response in one objects
+        response = convertJsonToObject(response)
+        response.response = response
+        
+        return response
 
     def get_open_positions(self):
 
@@ -464,7 +470,7 @@ class broker_alpaca:
 # print(response)
 
 
-# response = broker_alpaca(api).open_long_trade(
+# response = broker_alpaca(api).long_buy(
 #     symbol='ETHUSD',
 #     # qty=1,
 #     notional=400,

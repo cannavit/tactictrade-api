@@ -30,4 +30,5 @@ yahoo-fin==0.8.9.1
 coverage
 apscheduler
 
-
+# Yahoo finance get crpytocurrency list. 
+bs4

@@ -4,7 +4,7 @@ from apps.transaction.models import transactions
 from apps.transaction.serializers import TransactionSelectSerializersCreate
 
 
-class papertrade:
+class broker:
 
     # Define self data
     def __init__(self, trading, strategy, operation='long'):
@@ -35,12 +35,12 @@ class papertrade:
                 "broker_id": self.trading.broker.id,
                 "symbol_id": self.strategy.symbol.id,
                 "is_paper_trading": True,
-                "order": options['order'],
+                "order": options.order,
                 "operation": self.operation,
                 "isClosed": False,
-                "stop_loss": options['stopLoss'],
-                "take_profit": options['takeProfit'],
-                "base_cost": options['quantityUSD'],
+                "stop_loss": options.stopLoss,
+                "take_profit": options.takeProfit,
+                "base_cost": options.quantityUSD,
             }
 
             transactions.objects.create(
@@ -53,7 +53,7 @@ class papertrade:
         results[self.operation]['transaction_opened'] = results[self.operation]['transaction_opened'] + 1
         results[self.operation]['follower_id_opened'].append(
             self.trading.owner.id)
-        results[self.operation]['symbol'] = options['symbol']
+        results[self.operation]['symbol'] = options.symbol
 
         return results
 
@@ -61,7 +61,8 @@ class papertrade:
     def long_buy(self, options={},results={}):
 
         if self.count == 0 or self.isClosed == True:
-            self.create_transaction(self.options, self.results)
+
+            self.create_transaction(options)
 
         results = self.return_results(options, results)
 
@@ -86,7 +87,7 @@ class papertrade:
 
         if self.count == 0 and self.isClosed == False:
 
-            self.create_transaction(self.options, self.results)
+            self.create_transaction(self.options)
 
         results = self.return_results(self.options, self.results)
 
@@ -97,7 +98,7 @@ class papertrade:
 
         if self.count == 0 or self.isClosed == False: 
                 
-            self.create_transaction(options, results)
+            self.create_transaction(options)
 
         results = self.return_results(options, results)
 

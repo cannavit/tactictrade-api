@@ -1,7 +1,7 @@
 from .models import symbolStrategy as symbol
 import requests
 from django.db.models import Q
-
+from bs4 import BeautifulSoup
 # import yahoo
 from yahoo_fin import stock_info as si
 # Create if not exist and return the symbolName
@@ -10,6 +10,7 @@ from yahoo_fin import stock_info as si
 def get_symbolName(symbolName):
 
     symbolOriginalName = symbolName
+    is_crypto = False
 
     # Convert to capital letters
     symbolName = symbolName.upper()
@@ -22,6 +23,7 @@ def get_symbolName(symbolName):
     try:
         price = si.get_live_price(symbolOriginalName)
     except Exception as e:
+        is_crypto = True
         symbolName_corrected = symbolName[0:3] + \
             "-" + symbolName[3:len(symbolName)]
         try:
@@ -35,7 +37,7 @@ def get_symbolName(symbolName):
     )
 
     if symbolNameResponse.count() == 0:
-
+        # TODO create one control for check if the symbol is a crypto or not
         WHITE_LIST_BTC = ['BTCUSD', 'BITUSD', 'BTC-USD', 'BIT-USD']
         WHITE_LIST_ETH = ['ETH', 'ETHUSD', 'ETH-USD']
         WHITE_LIST_SOL = ['SOL', 'SOLUSD', 'SOL-USD']
@@ -71,7 +73,8 @@ def get_symbolName(symbolName):
                 symbolNameResponse = symbolNameResponse.create(
                     symbolName=symbolOriginalName,
                     symbolName_corrected=symbolName_corrected,
-                    url=url
+                    url=url,
+                    is_crypto=is_crypto,
                 )
             except Exception as e:
                 print(e)

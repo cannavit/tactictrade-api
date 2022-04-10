@@ -2,15 +2,23 @@
 # Import Other packages
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
+from utils.convert_json_to_objects import convertJsonToObject
 
 from apps.authentication.models import User
 from apps.broker.broker_close_trade import broker_close_trade_alpaca
-from apps.broker.broker_long_alpaca import broker_buy_alpaca
 from apps.broker.broker_short_alpaca import broker_sell_short_alpaca
 from apps.broker.broker_short_papertrade import (broker_short_buy_papertrade,
                                                  broker_short_sell_papertrade)
-from apps.broker.utils.papertrade import papertrade
-from apps.strategy.models import strategyNews
+# Import Brokers
+from apps.broker.brokers_connections.alpaca.long_buy import \
+    broker as broker_alpaca
+from apps.broker.brokers_connections.paper_trade.long_buy import broker as papertrade
+
+from apps.broker.models import broker
+
+# from apps.broker.utils.papertrade import papertrade
+
+from apps.strategy.models import strategyNews, symbolStrategy
 # Import Models Utils
 from apps.trading.models import strategy, trading_config
 from apps.trading.serializers import (strategySerializers,
@@ -26,48 +34,151 @@ class tradingConfigViews(generics.ListCreateAPIView):
     permissions_classes = (permissions.IsAuthenticated,)
 
     # Create post method
-    def post(self, required):
+    def post(self, request):
 
-        if required.auth == None:
+        if request.auth == None:
             return Response({
                 "status": "error",
-                "message": "Authentication required or invalid token",
+                "message": "Authentication request or invalid token",
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        userId = required.user.id
-        body = required.data
+        userId = request.user.id
+        body = request.data
         body['owner'] = userId
 
+        # RuleJs of quantity or national
         # Get strategyNew Id:
-        strategyNewCount = strategyNews.objects.filter(
-            id=body['strategyNews']).count()
-
-        if strategyNewCount == 0:
+        try:
+            strategy = strategyNews.objects.get(
+                id=body['strategyNews'])
+        except:
             # Return
             return Response({
                 "status": "error",
                 "message": "Strategy not found",
             }, status=status.HTTP_204_NO_CONTENT)
 
+        trading_config_obj = trading_config.objects.filter(
+            owner_id=userId, strategyNews_id=body['strategyNews'])
+
         # Validate not exist inside of db this owner_id with this strategyNews_id
-        if trading_config.objects.filter(
-                owner_id=userId, strategyNews_id=body['strategyNews']).count() > 0:
+        if trading_config_obj.count() > 0:
             return Response({
                 "status": "not allowed",
                 "message": "This trading_config already exist",
             }, status=status.HTTP_226_IM_USED
             )
 
-        # Valid data structure for trading_param
+        # Get restrictions from the broker.
+        broker_obj = broker.objects.get(id=request.data['broker'])
 
-        body['initialCapitalUSDLong'] = body['quantityUSDLong']
-        body['initialCapitalUSDShort'] = body['quantityUSDShort']
-        body['winTradeLong'] = 0
-        body['winTradeShort'] = 0
-        body['closedTradeShort'] = 0
-        body['closedTradeLong'] = 0
-        body['profitPorcentageShort'] = 0
-        body['profitPorcentageLong'] = 0
+        trade_rules = {
+            "short_is_allowed": broker_obj.short_is_allowed,
+            "short_allowed_fractional": broker_obj.short_allowed_fractional,
+            "long_is_allowed": broker_obj.long_is_allowed,
+            "long_allowed_fractional": broker_obj.long_allowed_fractional,
+            "short_is_allowed_crypto": broker_obj.short_is_allowed_crypto,
+            "short_allowed_fractional_crypto": broker_obj.short_allowed_fractional_crypto,
+            "long_is_allowed_crypto": broker_obj.long_is_allowed_crypto,
+            "long_allowed_fractional_crypto": broker_obj.long_allowed_fractional_crypto,
+        }
+
+        is_crypto = strategy.symbol.is_crypto
+
+        # Rules for verify if is allowed the trade
+        rules_controller = [
+            {
+                "is_crypto": True,
+                "variable_false": 'short_is_allowed_crypto',
+                "message": "The broker not allow the short crypto trade",
+                "request_data_variable": "is_active_short"
+            },
+            {
+                "is_crypto": True,
+                "variable_false": "long_is_allowed_crypto",
+                "message": "The broker not allow the long crypto trade",
+                "request_data_variable": "is_active_long"
+            },
+            {
+                "is_crypto": False,
+                "variable_false": "long_is_allowed",
+                "message": "The broker not allow the long trade",
+                "request_data_variable": "is_active_long"
+            },
+            {
+                "is_crypto": False,
+                "variable_false": "short_is_allowed",
+                "message": "The broker not allow the short trade",
+                "request_data_variable": "is_active_short"
+            },
+        ]
+
+        # Check if is allowed the trade if is not crypto trade
+        for rule in rules_controller:
+            if rule['is_crypto'] == is_crypto:
+                if not getattr(broker_obj, rule['variable_false']):
+
+                    if request.data[rule['request_data_variable']] == True:
+                        return Response({
+                            "status": "error",
+                            "message": rule['message'],
+                            "trade_rules": trade_rules
+                        }, status=status.HTTP_400_BAD_REQUEST)
+
+        rule_controller = [
+            {
+                "is_crypto": True,
+                "variable_false": "short_allowed_fractional_crypto",
+                "mandatory_variable": "quantityQTYShort",
+                "is_interger_value": False,
+                "message": "The broker not allow the fractional crypto trade"
+            },
+            {
+                "is_crypto": True,
+                "variable_false": "long_allowed_fractional_crypto",
+                "mandatory_variable": "quantityQTYLong",
+                "is_interger_value": False,
+                "message": "The broker not allow the fractional crypto trade"
+            },
+            {
+                "is_crypto": False,
+                "variable_false": "short_allowed_fractional",
+                "mandatory_variable": "quantityQTYShort",
+                "is_interger_value": False,
+                "message": "The broker not allow the fractional trade"
+            },
+            {
+                "is_crypto": False,
+                "variable_false": "long_allowed_fractional",
+                "mandatory_variable": "quantityQTYLong",
+                "is_interger_value": False,
+                "message": "The broker not allow the fractional trade"
+            },
+        ]
+
+        # TODO test this controller.
+        for rule in rule_controller:
+            if rule['is_crypto'] == is_crypto:
+                if not getattr(broker_obj, rule['variable_false']):
+                    if not rule['is_interger_value']:
+
+                        value_qty = body.get(rule['mandatory_variable'])
+
+                        if not body.get(rule['mandatory_variable']):
+                            # Return one error, not is allowed the fractional trade
+                            return Response({
+                                "status": "error",
+                                "message": rule['message'],
+                                "trade_rules": trade_rules
+                            }, status=status.HTTP_400_BAD_REQUEST)
+                    else:
+                        if not body.get(rule['mandatory_variable']):
+                            # Return one error, not is allowed the fractional trade
+                            return Response({
+                                "status": "error",
+                                "message": rule['message'],
+                                "trade_rules": trade_rules
+                            }, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = tradingConfigSerializers(data=body)
         if serializer.is_valid(raise_exception=True):
@@ -95,16 +206,16 @@ class tradingConfigViews(generics.ListCreateAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
     # Create method get all
-    def get(self, required):
+    def get(self, request):
 
-        if required.auth == None:
+        if request.auth == None:
             return Response({
                 "status": "error",
-                "message": "Authentication required or invalid token",
+                "message": "Authentication request or invalid token",
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        userId = required.user.id
-        body = required.data
+        userId = request.user.id
+        body = request.data
         body['owner'] = userId
 
         # Filter data only by owner_id
@@ -124,16 +235,16 @@ class tradingConfigSlugViews(generics.RetrieveUpdateDestroyAPIView):
     permissions_classes = (permissions.IsAuthenticated,)
 
     # Create method delete by id
-    def delete(self, required, slug):
+    def delete(self, request, slug):
 
-        if required.auth == None:
+        if request.auth == None:
             return Response({
                 "status": "error",
-                "message": "Authentication required or invalid token",
+                "message": "Authentication request or invalid token",
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        userId = required.user.id
-        body = required.data
+        userId = request.user.id
+        body = request.data
         body['owner'] = userId
 
         # Filter data only by owner_id
@@ -158,7 +269,7 @@ class tradingConfigSlugViews(generics.RetrieveUpdateDestroyAPIView):
         if request.auth == None:
             return Response({
                 "status": "error",
-                "message": "Authentication required or invalid token",
+                "message": "Authentication request or invalid token",
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
@@ -203,7 +314,7 @@ class tradingConfigGetAllViews(generics.ListAPIView):
 
             return Response({
                 "status": "error",
-                "message": "Authentication required or invalid token"
+                "message": "Authentication request or invalid token"
             }, status=status.HTTP_400_BAD_REQUEST)
 
         user = self.request.user
@@ -218,8 +329,6 @@ class strategyView(generics.GenericAPIView):
     permission_classes = (permissions.AllowAny, )
 
     def post(self, request):
-
-        # Create random token
 
         data = request.data
 
@@ -275,8 +384,6 @@ class strategyView(generics.GenericAPIView):
                 "trade_type": 'short',
                 "number_stocks": 0,
                 "is_winner": False
-
-
             }
         }
 
@@ -301,45 +408,41 @@ class strategyView(generics.GenericAPIView):
                     brokerName = tradingConfig.broker.broker
                     brokerCapital = tradingConfig.broker.capital
 
+                    options = {
+                        "order": "buy",
+                        "owner_id": follow.id,
+                        "strategyNews_id": strategyNewsConfig.values()[0]['id'],
+                        "quantityUSD": quantityUSD,
+                        "use": use,
+                        "stopLoss": stopLoss,
+                        "takeProfit": takeProfit,
+                        "consecutiveLosses": consecutiveLosses,
+                        "brokerCapital": brokerCapital,
+                        "symbol": strategyData.symbol.symbolName_corrected
+                    }
+
+                    options = convertJsonToObject(options)
+
                     if brokerName == "paperTrade":
-                        
+
                         results = papertrade(
                             trading=tradingConfig,
                             strategy=strategyData,
                             operation='long'
                         ).long_buy(
-                            options={
-                            "order": "buy",
-                            "owner_id": follow.id,
-                            "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                            "quantityUSD": quantityUSD,
-                            "use": use,
-                            "stopLoss": stopLoss,
-                            "takeProfit": takeProfit,
-                            "consecutiveLosses": consecutiveLosses,
-                            "brokerCapital": brokerCapital,
-                            "symbol": strategyData.symbol.symbolName_corrected
-                            },
+                            options=options,
                             results=results
                         )
 
                     if brokerName == 'alpaca':
 
-                        broker_buy_alpaca({
-                            "order": "buy",
-                            "owner_id": follow.id,
-                            "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                            "quantityUSD": quantityUSD,
-                            "use": use,
-                            "stopLoss": stopLoss,
-                            "takeProfit": takeProfit,
-                            "consecutiveLosses": consecutiveLosses,
-                            "brokerCapital": brokerCapital,
-                            "symbol": strategyData.symbol.symbolName_corrected  # TODO change the symbol name
-                        },
-                            strategyData,
-                            tradingConfig,
-                            results)
+                        results = broker_alpaca(
+                            options=options,
+                            strategy=strategyData,
+                            trading=tradingConfig,
+                            results=results,
+                            operation='long'
+                        ).long_buy()
 
                 if data['order'] == 'sell' and tradingConfig.is_active_long == True:
 
@@ -354,24 +457,13 @@ class strategyView(generics.GenericAPIView):
                     isPaperTrading = tradingConfig.is_paper_trading
 
                     if brokerName == "paperTrade":
-                        
+
                         results = papertrade(
                             trading=tradingConfig,
                             strategy=strategyData,
                             operation='long'
                         ).long_sell(
-                            options={
-                                "order": "sell",
-                                "owner_id": follow.id,
-                                "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                                "quantityUSD": quantityUSD,
-                                "use": use,
-                                "stopLoss": stopLoss,
-                                "takeProfit": takeProfit,
-                                "consecutiveLosses": consecutiveLosses,
-                                "brokerCapital": brokerCapital,
-                                "symbol": strategyData.symbol.symbolName_corrected
-                            },
+                            options=options,
                             results=results,
                         )
 
