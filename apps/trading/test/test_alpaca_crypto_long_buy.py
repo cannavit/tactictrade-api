@@ -30,6 +30,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import (APIClient, APIRequestFactory, APITestCase,
                                  force_authenticate)
+from apps.transaction.updater import scheduler_transactions_updated_calculate_profit
 from utils.brokers import broker_alpaca
 from utils.by_tests.select_test_material import trading_random_image
 from utils.convert_json_to_objects import convertJsonToObject
@@ -195,7 +196,9 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
         self.assertEqual(
             response_trading_strategy.status_code, status.HTTP_200_OK)
 
-            
+
+
+
 
     #     response_trading_strategy_data = response_trading_strategy.data['data']
     #     long_closed = response_trading_strategy_data['long']['transaction_closed']

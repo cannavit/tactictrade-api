@@ -57,9 +57,11 @@ def scheduler_transactions_updated_calculate_profit():
 
     print(' [schaduler job] transactions_updated_calculate_profit ')
 
+    numberOfOperations = 0
     if transactions_job.count() > 0:
 
         for transactions_i in transactions_job.values():
+            numberOfOperations += 1
 
 
             broker_selected = broker.objects.get(id=transactions_i['broker_id'])
@@ -90,6 +92,7 @@ def scheduler_transactions_updated_calculate_profit():
                         amount_close=close_cost,
                         )
 
+        return numberOfOperations
 
 def start():
     scheduler = BackgroundScheduler()

@@ -478,7 +478,6 @@ class strategyView(generics.GenericAPIView):
                     options.order = 'sell'
 
                     if brokerName == "paperTrade":
-
                         results = papertrade_short(
                             trading=tradingConfig,
                             strategy=strategyData,
@@ -508,7 +507,7 @@ class strategyView(generics.GenericAPIView):
                     options.order = 'buy'
 
                     if brokerName == "paperTrade":
-                        
+
                         results = papertrade_short(
                             trading=tradingConfig,
                             strategy=strategyData,
