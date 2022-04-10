@@ -32,6 +32,7 @@ from rest_framework.test import (APIClient, APIRequestFactory, APITestCase,
                                  force_authenticate)
 from utils.brokers import broker_alpaca
 from utils.by_tests.select_test_material import trading_random_image
+from utils.convert_json_to_objects import convertJsonToObject
 
 from utils.test_components.functionalities_utils import functionalities
 
@@ -92,7 +93,6 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
 
         self.assertEqual(brokerNumbers, 1)
 
-  
     def test_long_buy_crypto(self):
 
         #!  Create Strartegy
@@ -155,47 +155,45 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
         self.assertEqual(
             response_create_trade.status_code, status.HTTP_200_OK)
 
-        
+        response_create_trade.data = convertJsonToObject(
+            response_create_trade.data)
 
+        self.assertEqual(response_create_trade.data.status, 'success')
 
-        # long_opened = response_create_trade.data['data']['long']['transaction_opened']
+        # ? Check if the transaction is opened
+        self.assertEqual(
+            response_create_trade.data.data.long.transaction_opened > 0, True)
 
+        # Get symbol data
+        symbol_data = functionalities.get_symbol(symbol)
 
-    #     # ? Check if the transaction is opened
-    #     self.assertEqual(long_opened > 0, True)
-    #     # ? Verify if the long operation was open
-    #     self.assertEqual(
-    #         response_create_trade.status_code, status.HTTP_200_OK)
+        transaction = transactions.objects.filter(
+            owner_id=self.user.id,
+            strategyNews_id=strategyNewsId,
+            broker_id=broker_id,
+            symbol_id=symbol_data.id,
+            isClosed__in=[False]
+        ).order_by('-id')
 
-    #     # Get symbol data
-    #     symbol_data = functionalities.get_symbol(symbol)
+        transaction_count = transaction.count()
+        transaction_values = transaction.values()[0]
 
-    #     transaction = transactions.objects.filter(
-    #         owner_id=self.user.id,
-    #         strategyNews_id=strategyNewsId,
-    #         broker_id=broker_id,
-    #         symbol_id=symbol_data.id,
-    #         isClosed__in=[False]
-    #     ).order_by('-id')
+        # ? Validate if exist one transaction
+        self.assertEqual(transaction_count > 0, True)
+        self.assertEqual(transaction_values['order'], 'buy')
+        self.assertEqual(transaction_values['operation'], 'long')
 
-    #     transaction_count = transaction.count()
-    #     transaction_values = transaction.values()[0]
+        #! Check if idTransaction is equal to alpaca id
+        alpaca_orders = self.api.get_order(transaction_values['idTransaction'])
+        self.assertEqual(alpaca_orders.id, transaction_values['idTransaction'])
 
-    #     # ? Validate if exist one transaction
-    #     self.assertEqual(transaction_count > 0, True)
-    #     self.assertEqual(transaction_values['order'], 'buy')
-    #     self.assertEqual(transaction_values['operation'], 'long')
+        #! Close the transation [SELL]
+        response_trading_strategy = functionalities.create_trade(
+            body_open_transaction, 'sell')
 
-    #     #! Check if idTransaction is equal to alpaca id
-    #     alpaca_orders = self.api.get_order(transaction_values['idTransaction'])
-    #     self.assertEqual(alpaca_orders.id, transaction_values['idTransaction'])
-
-    #     #! Close the transation
-    #     response_trading_strategy = functionalities.create_trade(
-    #         body_open_transaction, 'sell')
-    #     # ? Verify the code 200
-    #     self.assertEqual(
-    #         response_trading_strategy.status_code, status.HTTP_200_OK)
+        # ? Verify the code 200
+        self.assertEqual(
+            response_trading_strategy.status_code, status.HTTP_200_OK)
 
     #     response_trading_strategy_data = response_trading_strategy.data['data']
     #     long_closed = response_trading_strategy_data['long']['transaction_closed']

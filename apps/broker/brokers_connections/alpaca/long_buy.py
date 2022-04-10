@@ -1,5 +1,6 @@
 import alpaca_trade_api as tradeapi
 from yahoo_fin import stock_info as si
+from apps.broker.broker_close_trade import get_alpaca_percentage_profit_closed
 
 from apps.broker.models import alpaca_configuration
 from apps.transaction.models import transactions
@@ -50,14 +51,13 @@ class broker():
         ).order_by('-id')
 
         count = self.trasactionLast.count()
-        self.have_transaction_open = False
 
         self.symbol = strategy.symbol.symbolName
         self.symbol_corrected = strategy.symbol.symbolName_corrected
         self.price = si.get_live_price(self.symbol_corrected)
 
         # self.symbol_corrected
-
+        self.have_transaction_open = False
         if count > 0:
             self.have_transaction_open = True
 
@@ -97,7 +97,8 @@ class broker():
                 take_profit_qty=responseAlpaca.data.take_profit,
                 base_cost=self.options.quantityUSD,
                 idTransaction=responseAlpaca.response.data.id,
-                status='accepted_alpaca', # This status is for verify the transaction with scheduler task in alpaca
+                # This status is for verify the transaction with scheduler task in alpaca
+                status='accepted_alpaca',
             )
 
             self.results[self.operation]['transaction_opened'] = self.results['long']['transaction_opened'] + 1
@@ -118,3 +119,58 @@ class broker():
                 'status': 'error',
                 'message': 'The position is open in alpaca',
             })
+
+    def close_position(self):
+
+        # Close Alpaca Long Position.
+        liquidity = control_liquidity(self)
+        if liquidity.get('status') == 'error':
+            return liquidity
+
+        alpaca = alpaca_configuration.objects.get(
+            broker_id=self.trading.broker.id)
+
+        if self.have_transaction_open:
+            data = self.trasactionLast.values()[0]
+
+            idTransaction = data['idTransaction']
+
+            # Close position
+
+            brokerAlpacaLib = broker_alpaca_lib(
+                self.api,
+                type=self.operation,
+                symbol=self.symbol_corrected
+            )
+
+            responseAlpacaPosition = brokerAlpacaLib.get_position(
+                id=idTransaction
+            )
+
+            responseAlpaca = brokerAlpacaLib.close_position(
+                id=idTransaction
+            )
+
+            if responseAlpaca.status != 'accepted' and responseAlpaca.status != 'success':
+                return {
+                    'status': 'error',
+                    'message': 'Not was possible to close the transaction in alpaca'
+                }
+
+
+            # ALPACA PROFIT ----------------------------------------------------------------------------------------------------------------------
+            profit_data = get_alpaca_percentage_profit_closed(self.api, idTransaction, responseAlpacaPosition.data.cost_basis)
+
+            self.trasactionLast.update(
+                isClosed=True,
+                price_closed=profit_data.close_price,
+                qty_close=profit_data.qty_close,
+                status='transactions_updated_calculate_profit'
+            )
+
+            self.results[self.operation]['transaction_closed'] = self.results[self.operation]['transaction_closed'] + 1
+            self.results[self.operation]['symbol'] = profit_data.symbol
+            self.results[self.operation]['profit'] = profit_data.profit
+            self.results[self.operation]['profit_percentage'] = profit_data.profit_percentage
+
+            return self.results

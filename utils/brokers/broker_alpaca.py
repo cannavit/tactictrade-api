@@ -88,7 +88,7 @@ class broker_alpaca_lib:
             }
         }
 
-        return response
+        return convertJsonToObject(response)
 
     def close_position(self, id):
 
@@ -129,11 +129,14 @@ class broker_alpaca_lib:
                 'response': response
             }
 
-        return {
+        data = convertJsonToObject({
             'status': 'success',
             'message': 'The transaction was closed in alpaca',
-            'response': response
-        }
+        })
+
+        data.response = response
+
+        return data
 
     def long_buy(self,
                  qty=None,
@@ -274,8 +277,9 @@ class broker_alpaca_lib:
 
         # Convert response in one objects
         response = convertJsonToObject(response)
-        response.response = response
-        
+
+        response.response= response
+
         return response
 
     def get_open_positions(self):

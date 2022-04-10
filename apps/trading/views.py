@@ -14,6 +14,7 @@ from apps.broker.brokers_connections.alpaca.long_buy import \
     broker as broker_alpaca
 from apps.broker.brokers_connections.paper_trade.long_buy import broker as papertrade
 
+
 from apps.broker.models import broker
 
 # from apps.broker.utils.papertrade import papertrade
@@ -397,34 +398,35 @@ class strategyView(generics.GenericAPIView):
                 owner_id=follow.id, strategyNews_id=strategyNewsId)
 
             if tradingConfig.is_active == True:
+
+                quantityUSD = tradingConfig.quantityUSDLong
+                use = tradingConfig.useLong
+                stopLoss = tradingConfig.stopLossLong
+                takeProfit = tradingConfig.takeProfitLong
+                consecutiveLosses = tradingConfig.consecutiveLossesLong
+                brokerName = tradingConfig.broker.broker
+                brokerCapital = tradingConfig.broker.capital
+
+                options = {
+                    "order": "buy",
+                    "owner_id": follow.id,
+                    "strategyNews_id": strategyNewsConfig.values()[0]['id'],
+                    "quantityUSD": quantityUSD,
+                    "use": use,
+                    "stopLoss": stopLoss,
+                    "takeProfit": takeProfit,
+                    "consecutiveLosses": consecutiveLosses,
+                    "brokerCapital": brokerCapital,
+                    "symbol": strategyData.symbol.symbolName_corrected
+                }
+
+                options = convertJsonToObject(options)
+
                 # Create one Long Trade
                 if data['order'] == 'buy' and tradingConfig.is_active_long == True:
-                    # Buy Long
-                    quantityUSD = tradingConfig.quantityUSDLong
-                    use = tradingConfig.useLong
-                    stopLoss = tradingConfig.stopLossLong
-                    takeProfit = tradingConfig.takeProfitLong
-                    consecutiveLosses = tradingConfig.consecutiveLossesLong
-                    brokerName = tradingConfig.broker.broker
-                    brokerCapital = tradingConfig.broker.capital
-
-                    options = {
-                        "order": "buy",
-                        "owner_id": follow.id,
-                        "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                        "quantityUSD": quantityUSD,
-                        "use": use,
-                        "stopLoss": stopLoss,
-                        "takeProfit": takeProfit,
-                        "consecutiveLosses": consecutiveLosses,
-                        "brokerCapital": brokerCapital,
-                        "symbol": strategyData.symbol.symbolName_corrected
-                    }
-
-                    options = convertJsonToObject(options)
-
+                    # Open Long Positions
                     if brokerName == "paperTrade":
-
+                        # Open Long Trade [PAPERTRADE-BUY]
                         results = papertrade(
                             trading=tradingConfig,
                             strategy=strategyData,
@@ -435,7 +437,7 @@ class strategyView(generics.GenericAPIView):
                         )
 
                     if brokerName == 'alpaca':
-
+                        # Open Long Trade [ALPACA-BUY]
                         results = broker_alpaca(
                             options=options,
                             strategy=strategyData,
@@ -447,17 +449,8 @@ class strategyView(generics.GenericAPIView):
                 if data['order'] == 'sell' and tradingConfig.is_active_long == True:
 
                     # Sell Short
-                    quantityUSD = tradingConfig.quantityUSDLong
-                    use = tradingConfig.useLong
-                    stopLoss = tradingConfig.stopLossLong
-                    takeProfit = tradingConfig.takeProfitLong
-                    consecutiveLosses = tradingConfig.consecutiveLossesLong
-                    brokerName = tradingConfig.broker.broker
-                    brokerCapital = tradingConfig.broker.capital
-                    isPaperTrading = tradingConfig.is_paper_trading
-
                     if brokerName == "paperTrade":
-
+                        # Open Short Trade [PAPERTRADE-SELL]
                         results = papertrade(
                             trading=tradingConfig,
                             strategy=strategyData,
@@ -468,24 +461,32 @@ class strategyView(generics.GenericAPIView):
                         )
 
                     if brokerName == 'alpaca':
-
-                        broker_close_trade_alpaca({
-                            "order": "sell",
-                            "owner_id": follow.id,
-                            "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                            "quantityUSD": quantityUSD,
-                            "use": use,
-                            "stopLoss": stopLoss,
-                            "takeProfit": takeProfit,
-                            "consecutiveLosses": consecutiveLosses,
-                            "brokerCapital": brokerCapital,
-                            "symbol": strategyData.symbol.symbolName_corrected
-                        },
-                            strategyData,
-                            tradingConfig,
-                            results,
+                        # CLOSE LONG TRADE [ALPACA-SELL]
+                        results = broker_alpaca(
+                            options=options,
+                            strategy=strategyData,
+                            trading=tradingConfig,
+                            results=results,
                             operation='long'
-                        )
+                        ).close_position()
+
+                        # broker_close_trade_alpaca({
+                        #     "order": "sell",
+                        #     "owner_id": follow.id,
+                        #     "strategyNews_id": strategyNewsConfig.values()[0]['id'],
+                        #     "quantityUSD": quantityUSD,
+                        #     "use": use,
+                        #     "stopLoss": stopLoss,
+                        #     "takeProfit": takeProfit,
+                        #     "consecutiveLosses": consecutiveLosses,
+                        #     "brokerCapital": brokerCapital,
+                        #     "symbol": strategyData.symbol.symbolName_corrected
+                        # },
+                        #     strategyData,
+                        #     tradingConfig,
+                        #     results,
+                        #     operation='long'
+                        # )
 
                 if data['order'] == 'sell' and tradingConfig.is_active_short == True:
 

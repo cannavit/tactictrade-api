@@ -5,6 +5,7 @@ from apps.broker.models import alpaca_configuration
 from apps.transaction.models import transactions
 from utils.brokers.broker_alpaca import broker_alpaca_lib
 from utils.calculate_porcentaje import pct_change
+from utils.convert_json_to_objects import convertJsonToObject
 from utils.transform_strings.stringConvert import delete_char
 
 
@@ -44,7 +45,7 @@ def get_alpaca_percentage_profit_closed(api, idTransaction,basic_cost):
     profit_percentage = round(profit_percentage, 3)
 
 
-    return {
+    return convertJsonToObject({
         'profit': profit,
         'profit_percentage': profit_percentage,
         'symbol': order_list_closed[0].symbol,
@@ -54,12 +55,13 @@ def get_alpaca_percentage_profit_closed(api, idTransaction,basic_cost):
         'close_price': float(order_list_closed[0]._raw['filled_avg_price']),
         'qty_close': float(order_list_closed[0]._raw['filled_qty']),
         # 'is_winner': is_winner
-    }
+    })
 
 
 
 
 def broker_close_trade_alpaca(options, strategy, trading, results, operation):
+
 
     alpaca = alpaca_configuration.objects.get(broker_id=trading.broker.id)
 
