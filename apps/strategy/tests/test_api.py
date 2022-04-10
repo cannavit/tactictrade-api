@@ -3,10 +3,12 @@ import random
 import string
 
 import requests
-from authentication.api.serializers import (LoginSerializer,
+from apps.authentication.api.serializers import (LoginSerializer,
                                             RegisterSerializer,
                                             UserSocialSerializer)
-from authentication.models import User
+
+                                            
+from apps.authentication.models import User
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
@@ -14,7 +16,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import (APIClient, APIRequestFactory, APITestCase,
                                  force_authenticate)
-from strategy.api.views import PostSettingAPIview
+from apps.strategy.api.views import PostSettingAPIview
 from utils.by_tests.select_test_material import trading_random_image
 
 

@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from authentication.models import User
+from apps.authentication.models import User
 import random
 import string
 

@@ -2,12 +2,14 @@ import json
 import random
 import string
 
-from authentication.api.serializers import LoginSerializer, RegisterSerializer, UserSocialSerializer
+from apps.authentication.api.serializers import (LoginSerializer,
+                                                 RegisterSerializer,
+                                                 UserSocialSerializer)
+from apps.authentication.models import User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
-from authentication.models import User
 
 
 # Create test for RegisterSerializer
@@ -27,7 +29,7 @@ class RegisterSerializerTest(APITestCase):
             'password': 'Passw0rd!',
         }
 
-        response = self.client.post(reverse('register'), body)
+        response = self.client.post(reverse('register_new_user'), body)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 

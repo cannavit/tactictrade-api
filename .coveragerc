@@ -1,9 +1,8 @@
 [run]
-source=apps.trading/
+source=
+    apps/
 omit=
     venv
     */migrations/*
     */tests/*
     */__init__.py
-    strategy/*
-    authentication/*

@@ -134,7 +134,6 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
             is_active_long=False,
         )
 
-        trading_config_obj_updated = trading_config.objects.get(owner=user_bot.id)
         #! Create Buy Alpaca-Broker Transaction trade_push_with_strategy
         # Create SHORT BUY with tactictrade.
         response_short_buy = functionalities.create_trade(
@@ -143,7 +142,6 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
         self.assertEqual(
             response_short_buy.status_code, status.HTTP_200_OK)
 
-
         #! Close the short position
         response_short_sell = functionalities.create_trade(
              trade_type='buy',token=strategy_obj.strategy_token)
@@ -151,12 +149,11 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
         self.assertEqual(
             response_short_sell.status_code, status.HTTP_200_OK)
 
+        # Check the value calculated by the strategy
+
+        # Get the transaction data
 
 
-
-
-        # response_create_trade.data = convertJsonToObject(
-        #     response_create_trade.data)
 
         # self.assertEqual(response_create_trade.data.status, 'success')
 
