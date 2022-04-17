@@ -80,8 +80,10 @@ class strategyNews(models.Model):
     url_image = models.URLField(blank=True, null=True, default='')
 
     likes = models.ManyToManyField(User, blank=True)
+    
     favorite = models.ManyToManyField(
         User, related_name='favorite', blank=True)
+
     follower = models.ManyToManyField(
         User, related_name='follower', blank=True)
 

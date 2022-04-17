@@ -8,11 +8,13 @@ from apps.broker.models import broker
 from apps.strategy.models import strategyNews
 # Import Models Utils
 from apps.trading.models import strategy, trading_config
+
 from apps.trading.serializers import (strategySerializers,
                                       tradingConfigSerializerPut,
                                       tradingConfigSerializers)
 
 
+from apps.transaction.models import transactions as transaction_model
 # Create your views here.
 class trading_config_view(generics.ListCreateAPIView):
 
@@ -323,10 +325,18 @@ class strategy_view(generics.GenericAPIView):
 
         data = request.data
 
-        strategyNewsConfig = strategyNews.objects.filter(
-            strategy_token=data['token'])
+        # strategyNewsConfig = strategyNews.objects.filter(
+        #     strategy_token=data['token'])
 
-        if strategyNewsConfig.count() == 0:
+        try:
+            strategy_obj = strategyNews.objects.get(
+                strategy_token=data['token'])
+            strategy_exist = True
+        except Exception as e:
+            strategy_exist = False
+
+
+        if not strategy_exist:
             return Response({
                 "status": "error",
                 "message": "Token Not found",
@@ -335,17 +345,16 @@ class strategy_view(generics.GenericAPIView):
         # Get List of users for this strategy
 
         # Check if this strategy is active:
-        if strategyNewsConfig.values()[0]['is_active'] == False:
+        if strategy_obj.is_active == False:
             return Response({
                 "status": "error",
                 "message": "Strategy not active",
             }, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # Get list of Follower for this strategy from ManyToManyField django object
-        strategyData = strategyNews.objects.get(
-            strategy_token=data['token'])
+        
 
-        followers = strategyData.follower.all()
+        followers = strategy_obj.follower.all()
 
         results = {
             "long":  {
@@ -380,21 +389,36 @@ class strategy_view(generics.GenericAPIView):
         are_followers = False
         for follow in followers:
             are_followers = True
-
-            strategyNewsId = strategyNewsConfig.values()[0]['id']
-            # Check if this user
             tradingConfig = trading_config.objects.get(
-                owner_id=follow.id, strategyNews_id=strategyNewsId)
+                owner_id=follow.id, strategyNews_id=strategy_obj.id)
 
             if tradingConfig.is_active == True:
 
                 brokerName = tradingConfig.broker.broker
 
+                # Transaction open
+                try:
+                    transaction_obj = transaction_model.objects.get(
+                        owner_id=follow.id,
+                        strategyNews_id=strategy_obj.id, 
+                        broker_id=tradingConfig.broker.id,
+                        trading_config=tradingConfig.id,
+                        symbol_id=strategy_obj.symbol.id,
+                        isClosed__in=[False],   
+                    )
+                    transaction_is_open = True
+
+                except Exception as e:
+                    transaction_obj = None
+                    transaction_is_open = False
+
                 broker_controller = broker_selector(
                     trading_config=tradingConfig,
-                    strategyNewsId=strategyNewsId,
+                    strategyNewsId=strategy_obj.id,
                     follower_id=follow.id,
-                    strategyData=strategyData,
+                    strategyData=strategy_obj,
+                    transaction_is_open=transaction_is_open,
+                    transaction_obj=transaction_obj,
                 )
 
                 # Create one Long Trade

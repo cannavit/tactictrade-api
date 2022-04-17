@@ -6,6 +6,7 @@ from requests import patch
 
 from apps.authentication.models import User
 from apps.broker.utils.init_broker import InitData
+from apps.broker.models import broker as broker_model
 from apps.strategy.api.serializers import (CreateSettingSerializers,
                                            OwnerStrategySerializers,
                                            PutSettingSerializers,
@@ -46,13 +47,16 @@ class SettingsAPIview(generics.ListAPIView):
         #     }, status=status.HTTP_400_BAD_REQUEST)
 
         user = self.request.user
+        self.user_id = user.id
 
         category = self.request.query_params.get('category', None)
 
         if category == 'me':
             results = strategyNews.objects.filter(owner_id=user.id).order_by('-id')
         elif category == 'favorite':
-            results = strategyNews.objects.filter(owner_id=user.id, favorite__in=[user.id]).order_by('-id')
+            results = strategyNews.objects.filter(favorite__in=[user.id]).order_by('-id')
+        elif category == 'likes':
+            results = strategyNews.objects.filter(likes__in=[user.id]).order_by('-id')            
         elif category == 'winners':
             # TODO Create logic for filter by winners strategies. 
             results = strategyNews.objects.filter(Q(owner_id=user.id) | Q(is_public__in=[True])).order_by('-id')
@@ -199,7 +203,8 @@ class PostSettingAPIview(generics.CreateAPIView):
             TradingViewWebHook = settings.BASE_URL + "/trading/strategy"
 
             # ? initialize  the broker
-            InitData.init_broker(userId)
+            if not broker_model.objects.filter(owner_id=userId,broker='paperTrade').exists():
+                InitData.init_broker(userId)
 
             #! Create bot strategy --->
             create_bot_by_new_strategy(

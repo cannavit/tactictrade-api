@@ -7,32 +7,21 @@ from apps.transaction.serializers import TransactionSelectSerializersCreate
 class broker:
 
     # Define self data
-    def __init__(self, trading, strategy, operation='long'):
-
-        try:
-            self.trasactionLast = transactions.objects.get(
-            owner_id=trading.owner.id,
-            strategyNews_id=strategy.id,
-            broker_id=trading.broker.id,
-            symbol_id=strategy.symbol.id,
-            trading_config_id=trading.id,
-            operation=operation,
-            is_paper_trading__in=[True],
-            )
-            self.count = 1
-        except Exception as e:
-            self.trasactionLast = 0
+    def __init__(self, trading, strategy, operation='long', transaction_obj=None):
+        
+        self.count = 1
+        if transaction_obj == None:
             self.count = 0
-
+            self.isClosed = True
+        else:
+            self.isClosed = False
+            
         self.trading = trading
         self.operation = operation
         self.strategy = strategy
-
         self.isClosed = False
-        if self.count != 0:
-            self.isClosed = self.trasactionLast.isClosed
-
-            
+        self.transaction_obj = transaction_obj
+                        
     def create_transaction(self, options={}):
 
             data = {
@@ -92,9 +81,9 @@ class broker:
 
         if self.count > 0 and self.isClosed == False:
 
-            self.trasactionLast.isClosed = True
-            self.trasactionLast.status = 'closed'
-            self.trasactionLast.save()
+            self.transaction_obj.isClosed = True
+            self.transaction_obj.status = 'closed'
+            self.transaction_obj.save()
             
             # update(
             #     isClosed=True,

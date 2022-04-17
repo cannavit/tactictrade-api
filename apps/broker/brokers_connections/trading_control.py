@@ -18,7 +18,9 @@ class broker_selector():
                  trading_config=None,
                  strategyNewsId=None,
                  follower_id=None,
-                 strategyData=None
+                 strategyData=None,
+                 transaction_is_open=False,
+                 transaction_obj=None,
                  ):
 
 
@@ -37,6 +39,8 @@ class broker_selector():
         self.trading_config = trading_config
         self.strategyData = strategyData
         self.options = convertJsonToObject(options)
+        self.transaction_is_open = transaction_is_open
+        self.transaction_obj = transaction_obj
 
     # Login for Long Trade
     def long_trade(self, order='buy', broker_name='paperTrade', is_active_long=False, results={}):
@@ -44,7 +48,7 @@ class broker_selector():
         self.options.order = 'buy'
 
         # Open Long Trade
-        if order == 'buy' and is_active_long == True:
+        if order == 'buy' and  is_active_long == True and not self.transaction_is_open:
 
             # Open Paper Trade (paperTrade)
             if broker_name == 'paperTrade':
@@ -67,13 +71,14 @@ class broker_selector():
                     strategy=self.strategyData,
                     trading=self.trading_config,
                     results=results,
-                    operation='long'
+                    operation='long',
+                    transactionLast=self.transaction_obj
                 ).long_buy()
 
 
         # Close Long Trade
 
-        if order == 'sell' and is_active_long == True:
+        if order == 'sell' and is_active_long == True and self.transaction_is_open:
 
             # Close Paper Trade (paperTrade)
             if broker_name == 'paperTrade':
@@ -83,12 +88,12 @@ class broker_selector():
                 results = papertrade(
                     trading=self.trading_config,
                     strategy=self.strategyData,
-                    operation='long'
+                    operation='long',
+                    transaction_obj=self.transaction_obj
                 ).close_position(
                     options=self.options,
                     results=results,
                 )
-
 
             # Close Long Trade [ALPACA-SELL]
             elif broker_name == 'alpaca':
@@ -98,7 +103,7 @@ class broker_selector():
                     strategy=self.strategyData,
                     trading=self.trading_config,
                     results=results,
-                    operation='long'
+                    operation='long',
                 ).close_position()
 
 

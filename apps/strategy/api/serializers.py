@@ -54,32 +54,35 @@ class SettingsSerializers(serializers.ModelSerializer):
 
         timer = str(response['timer'])
         response['timeTrade'] = timer + period
-
         response['symbolName'] = instance.symbol.symbolName
-
         response['symbolUrl'] = instance.symbol.url
 
-        # response['symbolUrl'] = response['symbolUrl'][0]
 
         response['owner']['followers'] = followers_mantainers.objects.filter(
             user_id=instance.owner.id).count()
+
         response['owner']['mantainer_id'] = user_id
 
         response['numbers_likes'] = instance.likes.all().count()
         response['numbers_favorite'] = instance.favorite.all().count()
 
-        response['is_liked'] = strategyNews.objects.filter(
-            likes__in=[instance.owner.id]).count() > 0
 
-        response['is_favorite'] = strategyNews.objects.filter(
-            favorite__in=[instance.owner.id]).count() > 0
+        strategy_obj = strategyNews.objects.filter(id=instance.id)
 
-        response['likes_number'] = strategyNews.objects.filter(
-            likes__in=[instance.owner.id]).count()
+        response['is_favorite'] = strategy_obj.filter(
+            favorite__in=[user_id]).count() > 0
 
-        response['is_follower'] = trading_config.objects.filter(
-            owner_id=request.user.id,
-            strategyNews=response['id']).count() > 0
+        response['is_follower']  =  strategy_obj.filter(
+            follower__in=[user_id]).count() > 0    
+
+        response['is_liked'] = strategy_obj.filter(
+            likes__in=[user_id]).count() > 0       
+
+        # response['is_favorite'] = is_favorite
+
+        response['likes_number'] = strategy_obj.filter(
+            likes__in=[user_id]).count()
+
 
 
         response['post_image'] = response['url_image']
