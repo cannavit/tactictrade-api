@@ -77,7 +77,6 @@ def broker_short_buy_papertrade(options, strategy, trading, results):
 
 
     if count == 0 or isClosed == False: 
-        print(count)
 
         price = si.get_live_price(options['symbol'])
         

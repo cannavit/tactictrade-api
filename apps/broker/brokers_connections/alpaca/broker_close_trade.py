@@ -17,11 +17,9 @@ def get_alpaca_percentage_profit_closed(api, idTransaction,basic_cost):
         nested=True
     )
 
-    print(alpaca_list_order)
     order_list_closed = []
     for order in alpaca_list_order:
         if order.id == idTransaction or order.asset_id == idTransaction or order.client_order_id == idTransaction:
-            print(order)
             order_list_closed.append(order)
 
     if len(order_list_closed) < 2:
@@ -30,7 +28,6 @@ def get_alpaca_percentage_profit_closed(api, idTransaction,basic_cost):
             'message': 'Not was possible to close the transaction in alpaca'
         }
 
-        # print(order)
 
     amount_closed_open = float(
         order_list_closed[0]._raw['filled_avg_price']) * float(order_list_closed[0]._raw['filled_qty'])
@@ -92,7 +89,6 @@ def broker_close_trade_alpaca(options, strategy, trading, results, operation):
 
     # if  transaction_open != 0 and operation == 'short' : # Close the long The Transaction
     if transaction_open != 0:  # Close the long The Transaction
-        print(count)
         closeOperation = True
 
     if transaction_open != 0 and operation == 'long':  # Open The Transaction

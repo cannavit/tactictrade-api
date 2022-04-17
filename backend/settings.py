@@ -16,7 +16,7 @@ import environ
 import django_heroku
 import datetime
 
-# Load the environment variables. 
+# Load the environment variables.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 DJANGO_ENV = os.environ.get('DJANGO_ENV')
 
@@ -42,20 +42,19 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 AUTH_USER_MODEL = 'authentication.User'
 
 
-
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-)08%828jjep%hpdilb*cs$^^2y1)hf(hl2w-5c843dwq4pj^2h'
 MASTER_KEY = env('MASTER_KEY')
 TEST_KEY = env('TEST_KEY')
 
 ALLOWED_HOSTS = [
-                 '.herokuapp.com',
-                 'django-backend-generics.herokuapp.com',
-                 'django-backend-steging.herokuapp.com',
-                 'tactictrade-api-staging.herokuapp.com',
-                 'tactictrade-api-staging.herokuapp.com',
-                 '*'
-                 ]
+    '.herokuapp.com',
+    'django-backend-generics.herokuapp.com',
+    'django-backend-steging.herokuapp.com',
+    'tactictrade-api-staging.herokuapp.com',
+    'tactictrade-api-staging.herokuapp.com',
+    '*'
+]
 
 # Application definition
 
@@ -71,17 +70,20 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_swagger',
     'drf_yasg2',
+    # 'dbbackup', # Apps for doing the backups
     'gridfs_storage',
     'django_filters',
     'drf_multiple_model',
-    'gunicorn',    
+    'gunicorn',
     'apps.authentication',
     'apps.setting',
     'apps.strategy',
     'apps.trading',
     'apps.transaction',
     'apps.broker',
+   
 ]
+
 
 # SCHEDULER
 WHITENOISE_USE_FINDERS = True
@@ -282,5 +284,47 @@ IMAGE_KIT_TAGS = DJANGO_ENV + '_' + DB_NAME
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
-ALPACA_BROKER_TEST_SECRET_KEY=env('ALPACA_BROKER_TEST_SECRET_KEY')
-ALPACA_BROKER_TEST_API_KEY_ID=env('ALPACA_BROKER_TEST_API_KEY_ID')
+ALPACA_BROKER_TEST_SECRET_KEY = env('ALPACA_BROKER_TEST_SECRET_KEY')
+ALPACA_BROKER_TEST_API_KEY_ID = env('ALPACA_BROKER_TEST_API_KEY_ID')
+
+
+
+#! BACKUP DATABASE CONFIGURATION
+#TODO BackupDB Finish this configuration is pending
+DBBACKUP_STORAGE = 'django.core.files.storage.FileSystemStorage'
+DBBACKUP_STORAGE_OPTIONS = {'location': BASE_DIR / 'backup'}
+
+
+DBBACKUP_CONNECTORS = {
+    'default': {
+        'USER': env('DB_USERNAME'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'AUTH_SOURCE':  env('DB_USERNAME'),
+    }
+}
+
+#! TEST CONTROLLERS
+# Active or Disabled Test.
+
+# apps.authentication
+test_register_user = False
+test_login_user_not_verified = False
+test_login_user_verified = False
+test_create_user = False
+test_create_super_user = False
+test_message_create_user_when_not_user_name_is_supplied = False
+test_create_user_when_not_user_name_is_supplied = False
+test_create_user_when_not_user_email_is_supplied = False
+test_message_create_user_when_not_user_email_is_supplied = False
+# apps.trading
+test_create_broker_alpaca = False
+test_trading_config_is_crypto_alpaca_short = False
+
+test_trading_config_alpaca_short_not_fractional = False
+test_short_crypto = False
+test_long_buy_crypto = True
+test_calibrate_spread_not_crypto = False
+
+# Test Create strategies and filter it. 
+

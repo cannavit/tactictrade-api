@@ -52,8 +52,8 @@ def update_accepted_broker_transactions():
                     print('---- ---- ----[UPDATED] RUN SCHEDULER accepted_alpaca task')
 
 def scheduler_transactions_updated_calculate_profit():
-
-    transactions_job = transactions.objects.filter(status='transactions_updated_calculate_profit')
+    # TODO this task not is updated
+    transactions_job = transactions.objects.filter(status='transactions_updated_calculate_profit_disabled')
 
     print(' [schaduler job] transactions_updated_calculate_profit ')
 

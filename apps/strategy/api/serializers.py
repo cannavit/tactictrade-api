@@ -1,6 +1,6 @@
 from email.policy import default
 from rest_framework import serializers
-from apps.authentication.models import User
+from apps.authentication.models import User, followers_mantainers
 from apps.strategy.models import strategyNews, symbolStrategy
 from apps.authentication.models import User
 from django.conf import settings
@@ -45,9 +45,12 @@ class SettingsSerializers(serializers.ModelSerializer):
 
         user_id = request.user.id
 
-        response['is_owner'] = owner_id == user_id
-        periodTime = response['period']
-        period = periodTime[0:1]
+        try:
+            response['is_owner'] = owner_id == user_id
+            periodTime = response['period']
+            period = periodTime[0:1]
+        except:
+            period = 'd'
 
         timer = str(response['timer'])
         response['timeTrade'] = timer + period

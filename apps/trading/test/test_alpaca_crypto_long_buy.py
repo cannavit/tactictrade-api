@@ -1,41 +1,65 @@
+import datetime
+from itertools import count
 import json
 import random
 import string
 import time
+from datetime import datetime, timezone
 
 import alpaca_trade_api as tradeapi
 import requests
+
 from apps.authentication.api.serializers import (LoginSerializer,
                                                  RegisterSerializer,
                                                  UserSocialSerializer)
+
 from apps.authentication.api.views import LoginAPIView, RegisterViewSet
+
 from apps.authentication.models import User
+
 from apps.broker.api.views import (alpacaConfigurationSerializersView,
                                    brokerSerializersView)
 # Create test for createStrategy
 from apps.broker.models import broker as broker_model
 from apps.strategy.api.views import PostSettingAPIview
-from apps.strategy.models import symbolStrategy
-from apps.trading.views import (strategyView, tradingConfigGetAllViews,
-                                tradingConfigSlugViews, tradingConfigViews)
+
+from apps.strategy.models import symbolStrategy, strategyNews as strategy_model
+from apps.trading.models import trading_config as trading_config_model
+
+
+from apps.trading.views import (strategy_view, trading_config_get_all_view,
+                                trading_config_slug_views, trading_config_view)
+
 from apps.transaction.models import transactions
+
+from apps.transaction.updater import \
+    scheduler_transactions_updated_calculate_profit
+
 # import settings.
+
 # Get Configuration from django settings
-from django.conf import settings
+from backend import settings
+
 from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Q
 from django.urls import reverse
+
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+
 from rest_framework.test import (APIClient, APIRequestFactory, APITestCase,
                                  force_authenticate)
-from apps.transaction.updater import scheduler_transactions_updated_calculate_profit
+
 from utils.brokers import broker_alpaca
 from utils.by_tests.select_test_material import trading_random_image
 from utils.convert_json_to_objects import convertJsonToObject
-
 from utils.test_components.functionalities_utils import functionalities
+
+import pytz
+import datetime
+
+from backend import settings
 
 
 class TradingAlpacaLongCreateStrategy(APITestCase):
@@ -96,226 +120,378 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
 
     def test_long_buy_crypto(self):
 
-        #!  Create Strartegy
-        symbol = 'SOLUSD'
+        if settings.test_long_buy_crypto:
 
-        self.body['symbol'] = symbol
+            #!  Create Strartegy
+            symbol = 'SOLUSD'
 
-        response_create_strategy = functionalities.create_strategy(
-            symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
+            self.body['symbol'] = symbol
 
-        response_strategyNews = response_create_strategy.data
-        strategyNewsId = response_strategyNews['data']['strategyNewsId']
-        self.assertEqual(response_create_strategy.status_code,
-                         status.HTTP_200_OK)
+            response_create_strategy = functionalities.create_strategy(
+                symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
 
-        # ? Create Broker
-        #! Create Alpaca Broker.  alpaca
-        response_create_broker = functionalities.create_broker(
-            self.token_access)
+            response_strategyNews = response_create_strategy.data
+            strategyNewsId = response_strategyNews['data']['strategyNewsId']
+            self.assertEqual(response_create_strategy.status_code,
+                             status.HTTP_200_OK)
 
-        #! Response Create Trading Config
-        broker_id = response_create_broker.data['results']['id']
+            # ? Create Broker
+            #! Create Alpaca Broker.  alpaca
+            response_create_broker = functionalities.create_broker(
+                self.token_access)
 
-        tradingConfigBody = {
-            "strategyNews": strategyNewsId,
-            "broker": broker_id,
-            "quantityUSDLong": 1000,
-            "useLong": True,
-            "stopLossLong": -5,
-            "takeProfitLong": 10,
-            "consecutiveLossesLong": 3,
-            "quantityQTYShort": 2,  # * This parameter is not allowed.
-            "useShort": False,
-            "stopLossShort": -5,
-            "takeProfitShort": 10,
-            "consecutiveLossesShort": 3,
-            "is_active": True,
-            "is_active_short": False,
-            "is_active_long": True,
-            "close_trade_long_and_deactivate": True,
-            "close_trade_short_and_deactivate": True
-        }
+            #! Response Create Trading Config
+            broker_id = response_create_broker.data['results']['id']
 
-        response_trading_config = functionalities.create_trading_config(
-            strategy_id=strategyNewsId,
-            broker_id=broker_id,
-            token_access=self.token_access,
-            tradingConfigBody=tradingConfigBody
-        )
+            tradingConfigBody = {
+                "strategyNews": strategyNewsId,
+                "broker": broker_id,
+                "quantityUSDLong": 1000,
+                "useLong": True,
+                "stopLossLong": -5,
+                "takeProfitLong": 10,
+                "consecutiveLossesLong": 3,
+                "quantityQTYShort": 2,  # * This parameter is not allowed.
+                "useShort": False,
+                "stopLossShort": -5,
+                "takeProfitShort": 10,
+                "consecutiveLossesShort": 3,
+                "is_active": True,
+                "is_active_short": False,
+                "is_active_long": True,
+                "close_trade_long_and_deactivate": True,
+                "close_trade_short_and_deactivate": True
+            }
 
-        self.assertEqual(response_trading_config.status_code, 201)
+            response_trading_config = functionalities.create_trading_config(
+                strategy_id=strategyNewsId,
+                broker_id=broker_id,
+                token_access=self.token_access,
+                tradingConfigBody=tradingConfigBody
+            )
 
-        #! Build the body for create trading operation
-        body_open_transaction = response_create_strategy.create_trade_body
+            self.assertEqual(response_trading_config.status_code, 201)
 
-        #! Create Buy Alpaca-Broker Transaction trade_push_with_strategy
-        response_create_trade = functionalities.create_trade(
-            body_open_transaction, 'buy')
+            #! Build the body for create trading operation
+            body_open_transaction = response_create_strategy.create_trade_body
 
-        self.assertEqual(
-            response_create_trade.status_code, status.HTTP_200_OK)
+            #! Create Buy Alpaca-Broker Transaction trade_push_with_strategy
+            response_create_trade = functionalities.create_trade(
+                body_open_transaction, 'buy')
 
-        response_create_trade.data = convertJsonToObject(
-            response_create_trade.data)
+            self.assertEqual(
+                response_create_trade.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(response_create_trade.data.status, 'success')
+            response_create_trade.data = convertJsonToObject(
+                response_create_trade.data)
 
-        # ? Check if the transaction is opened
-        self.assertEqual(
-            response_create_trade.data.data.long.transaction_opened > 0, True)
+            self.assertEqual(response_create_trade.data.status, 'success')
 
-        # Get symbol data
-        symbol_data = functionalities.get_symbol(symbol)
+            # ? Check if the transaction is opened
+            self.assertEqual(
+                response_create_trade.data.data.long.transaction_opened > 0, True)
 
-        transaction = transactions.objects.filter(
-            owner_id=self.user.id,
-            strategyNews_id=strategyNewsId,
-            broker_id=broker_id,
-            symbol_id=symbol_data.id,
-            isClosed__in=[False]
-        ).order_by('-id')
+            # Get symbol data
+            symbol_data = functionalities.get_symbol(symbol)
 
-        transaction_count = transaction.count()
-        transaction_values = transaction.values()[0]
+            transaction = transactions.objects.filter(
+                owner_id=self.user.id,
+                strategyNews_id=strategyNewsId,
+                broker_id=broker_id,
+                symbol_id=symbol_data.id,
+                isClosed__in=[False]
+            ).order_by('-id')
 
-        # ? Validate if exist one transaction
-        self.assertEqual(transaction_count > 0, True)
-        self.assertEqual(transaction_values['order'], 'buy')
-        self.assertEqual(transaction_values['operation'], 'long')
+            transaction_count = transaction.count()
+            transaction_values = transaction.values()[0]
 
-        #! Check if idTransaction is equal to alpaca id
-        alpaca_orders = self.api.get_order(transaction_values['idTransaction'])
-        self.assertEqual(alpaca_orders.id, transaction_values['idTransaction'])
+            # ? Validate if exist one transaction
+            self.assertEqual(transaction_count > 0, True)
+            self.assertEqual(transaction_values['order'], 'buy')
+            self.assertEqual(transaction_values['operation'], 'long')
 
-        #! Close the transation [SELL]
-        response_trading_strategy = functionalities.create_trade(
-            body_open_transaction, 'sell')
+            #! Check if idTransaction is equal to alpaca id
+            alpaca_orders = self.api.get_order(
+                transaction_values['idTransaction'])
+            self.assertEqual(alpaca_orders.id,
+                             transaction_values['idTransaction'])
 
-        # ? Verify the code 200
-        self.assertEqual(
-            response_trading_strategy.status_code, status.HTTP_200_OK)
+            #! Close the transation [SELL]
+            response_trading_strategy = functionalities.create_trade(
+                body_open_transaction, 'sell')
 
+            # ? Verify the code 200
+            self.assertEqual(
+                response_trading_strategy.status_code, status.HTTP_200_OK)
 
+    def test_calibrate_spread_not_crypto(self):
 
+        if settings.test_calibrate_spread_not_crypto:
+            # List of symbolrs not crypto, for example AAPL, FB, TSLA and others
+            symbols = ['AAPL', 'FB', 'TSLA', 'AMZN']
 
+            # buy_list = [
+            #     # AAPL None 1000
+            #     {
+            #         'symbol': 'AAPL',
+            #         'quantity': None,
+            #         'usd': 1000
+            #     },
+            #     # FB 2 None
+            #     {
+            #         'symbol': 'FB',
+            #         'quantity': 2,
+            #         'usd': None
+            #     },
+            #     # AMZN None 1000
+            #     {
+            #         'symbol': 'AMZN',
+            #         'quantity': None,
+            #         'usd': 1000
+            #     },
+            #     # TSLA None 1000
+            #     {
+            #         'symbol': 'TSLA',
+            #         'quantity': None,
+            #         'usd': 1000
+            #     },
+            #     # SPY 2 None
+            #     {
+            #         'symbol': 'SPY',
+            #         'quantity': 2,
+            #         'usd': None
+            #     },
+            #     # GLD 5 None
+            #     {
+            #         'symbol': 'GLD',
+        #         'quantity': 5,
+        #         'usd': None
+        #     },
+        #     # NFLX None 2000
+        #     {
+        #         'symbol': 'NFLX',
+        #         'quantity': None,
+        #         'usd': 2000
+        #     },
+        #     # SPOT 4 None
+        #     {
+        #         'symbol': 'SPOT',
+        #         'quantity': 4,
+        #         'usd': None
+        #     },
 
-    #     response_trading_strategy_data = response_trading_strategy.data['data']
-    #     long_closed = response_trading_strategy_data['long']['transaction_closed']
-    #     # ? Check if was close the transaction
-    #     self.assertTrue(long_closed > 0)
+        # ]
 
-    #     #! Get List of orders with alpaca api
-    #     transaction_closed = transactions.objects.filter(
-    #         owner_id=self.user.id,
-    #         strategyNews_id=strategyNewsId,
-    #         broker_id=broker_id,
-    #         symbol_id=symbol_data.id,
-    #     ).order_by('-id')
+            buy_list = [
+                # AAPL None 1000
+                # {
+                #     'symbol': 'BTCUSD',
+                #     'quantity': None,
+                #     'usd': 4000
+                # },
+                {
+                    'symbol': 'SOLUSD',
+                    'quantity': 4,
+                    'usd': None
+                },
+                # {
+                #     'symbol': 'ETHUSD',
+                #     'quantity': None,
+                #     'usd': 1000
+                # },
+            ]
 
-    #     transaction_closed_values = transaction_closed.values()[0]
-    #     transaction_closed_values_profit = transaction_closed_values['profit']
+            tradingConfigBody = {
+                "strategyNews": 0,
+                "broker": 0,
+                "useLong": True,
+                "stopLossLong": -5,
+                "takeProfitLong": 10,
+                "consecutiveLossesLong": 3,
+                "consecutiveLossesShort": 3,
+                "is_active": True,
+                "is_active_short": False,
+                "is_active_long": True,
+            }
 
-    #     alpaca_list_order = self.api.list_orders(
-    #         status='closed',
-    #         limit=2,
-    #         nested=True
-    #     )
+            
+            body = self.body
+            # Run this test only when new york market is open with newyork time region America/New_York and import the dependencies
 
-    #     amount_closed_open = float(
-    #         alpaca_list_order[1]._raw['filled_avg_price']) * float(alpaca_list_order[1]._raw['filled_qty'])
-    #     amount_closed_closd = float(
-    #         alpaca_list_order[0]._raw['filled_avg_price']) * float(alpaca_list_order[0]._raw['filled_qty'])
-    #     profit_alpaca_long = amount_closed_closd - amount_closed_open
+            time_now_zone = datetime.datetime.now(
+                pytz.timezone("America/New_York"))
+            hour = time_now_zone.hour
 
-    # def test_trading_config_edit(self):
+            strategy_list = []
+            response_data_buy = []
+            count = 0
+            # if hour >= 9 and hour <= 16:
+            if True:  # TODO active this after.
 
-    #     # * Preporesing test
-    #     #!  Create Strartegy
-    #     symbol = 'ETHUSD'
-    #     self.body['symbol'] = symbol
+                for i in buy_list:
+                    count += 1
 
-    #     response_create_strategy = functionalities.create_strategy(
-    #         symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
+                    d = convertJsonToObject(i)
+                    # Symbol replace of body
+                    body['symbol'] = d.symbol
+                    body['strategyNews'] = d.symbol
 
-    #     response_strategyNews = response_create_strategy.data
-    #     strategyNewsId = response_strategyNews['data']['strategyNewsId']
-    #     self.assertEqual(response_create_strategy.status_code,
-    #                      status.HTTP_200_OK)
+                    #! Create strategy:
+                    response_create_strategy = functionalities.create_strategy(
+                        d.symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
 
-    #     # ? Create Broker
-    #     #! Create Alpaca Broker.  alpaca
-    #     response_create_broker = functionalities.create_broker(
-    #         self.token_access)
+                    self.assertEqual(
+                        response_create_strategy.status_code, status.HTTP_200_OK)
 
-    #     #! Response Create Trading Config
-    #     broker_id = response_create_broker.data['results']['id']
+                    data_response = convertJsonToObject(
+                        response_create_strategy.data)
 
-    #     response_trading_config = functionalities.create_trading_config(
-    #         strategy_id=strategyNewsId,
-    #         broker_id=broker_id,
-    #         token_access=self.token_access)
+                    #! Create broker config
+                    if count == 1:
+                        response_create_broker = functionalities.create_broker(
+                            self.token_access)
+                        self.assertEqual(
+                            response_create_broker.status_code, status.HTTP_201_CREATED)
 
-    #     self.assertEqual(
-    #         response_trading_config.status_code, status.HTTP_201_CREATED)
+                        broker_id = response_create_broker.data['results']['id']
 
-    #     # * Test edit trading config using one custom body.
-    #     trading_config_id = response_trading_config.data['data']['id']
+                    #! Create trading config
 
-    #     #! Save only one parameters
-    #     body = {
-    #         "is_active_short": True,
-    #         # "is_active_long": False
-    #     }
+                    tradingConfigBody['strategyNews'] = data_response.data.strategyNewsId
+                    tradingConfigBody['broker'] = broker_id
+                    tradingConfigBody['is_active_short'] = False
 
-    #     factory = APIRequestFactory()
-    #     url = reverse('tradingValue_edit', kwargs={'slug': trading_config_id})
+                    if d.quantity is not None:
+                        tradingConfigBody['quantityQTYLong'] = d.quantity
+                    elif d.usd is not None:
+                        tradingConfigBody['quantityUSDLong'] = d.usd
 
-    #     request = factory.put(url, body, format='json',
-    #                           HTTP_AUTHORIZATION='Bearer {}'.format(self.token_access))
+                    
+                    response_trading_config = functionalities.create_trading_config(
+                        strategy_id=data_response.data.strategyNewsId,
+                        broker_id=broker_id,
+                        token_access=self.token_access,
+                        tradingConfigBody=tradingConfigBody
+                    )
 
-    #     response = tradingConfigSlugViews.as_view()(request, slug=trading_config_id)
+                    self.assertEqual(
+                        response_trading_config.status_code, status.HTTP_201_CREATED)
 
-    #     self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+                    # #! Buy the strategy
+                    response_buy = functionalities.create_trade(
+                        trade_type='buy', token=data_response.data.strategy_token)
 
-    #     #! Save all data
+                    self.assertEqual(
+                        response_buy.status_code, status.HTTP_200_OK)
 
-    #     body_full_data = {
-    #         "quantityUSDLong": 600,
-    #         "useLong": True,
-    #         "stopLossLong": -5,
-    #         "takeProfitLong": 10,
-    #         "consecutiveLossesLong": 3,
-    #         "quantityUSDShort": 500,
-    #         "useShort": True,
-    #         "stopLossShort": -5,
-    #         "takeProfitShort": 0,
-    #         "consecutiveLossesShort": 3,
-    #         "is_active": True,
-    #         "is_active_short": True,
-    #         "is_active_long": True,
-    #         "close_trade_long_and_deactivate": True,
-    #         "close_trade_short_and_deactivate": True
-    #     }
+                    # Get the bot email
 
-    #     factory = APIRequestFactory()
-    #     url = reverse('tradingValue_edit', kwargs={'slug': trading_config_id})
+                    strategy_obj = strategy_model.objects.get(
+                        id=data_response.data.strategyNewsId)
+                    user_obj = User.objects.get(email=self.user.email)
 
-    #     request = factory.put(url, body_full_data, format='json',
-    #                           HTTP_AUTHORIZATION='Bearer {}'.format(self.token_access))
+                    # * Disabled trading short
+                    functionalities.disabled_buy_or_short_trading_config(
+                        user_id=user_obj.id,
+                        strategyNews_id=strategy_obj.id,
+                        disabled_short=True,
+                    )
 
-    #     response = tradingConfigSlugViews.as_view()(request, slug=trading_config_id)
+                    # Update the trading_config_obj_bot inside of the django database
+                    trading_config_obj_bot = trading_config_model.objects.get(
+                        owner_id=user_obj.id, strategyNews_id=strategy_obj.id)
+                    # initialCapitalQTYLong
+                    trading_config_obj_bot.initialCapitalQTYLong = d.quantity
+                    # initialCapitalUSDLong
+                    trading_config_obj_bot.initialCapitalUSDLong = d.usd
+                    # Save new data.
+                    trading_config_obj_bot.save()
 
-    #     self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+                    strategy_list.append({
+                        'symbol': d.symbol,
+                        'quantity': d.quantity,
+                        'usd': d.usd,
+                        'strategy_token': data_response.data.strategy_token,
+                        'strategyNewsId': data_response.data.strategyNewsId,
+                        'status_code': response_buy.status_code,
+                        'bot_email': strategy_obj.email_bot,
+                        'bot_user_id': user_obj.id,
+                        'trading_confing_id': trading_config_obj_bot.id,
 
-    #     #! Control of bad request
+                    })
 
-    #     factory = APIRequestFactory()
-    #     url = reverse('tradingValue_edit', kwargs={'slug': 100})
+                # Disabled all shorts.
+                # Sell all Strategies.
 
-    #     request = factory.put(url, body_full_data, format='json',
-    #                           HTTP_AUTHORIZATION='Bearer {}'.format(self.token_access))
+                for i in strategy_list:
+                    d = convertJsonToObject(i)
+                    response_sell = functionalities.create_trade(
+                        trade_type='sell', token=d.strategy_token)
 
-    #     response = tradingConfigSlugViews.as_view()(request, slug=100)
+                    scheduler_transactions_updated_calculate_profit()
 
-    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+                    self.assertEqual(
+                        response_sell.status_code, status.HTTP_200_OK)
+
+                    response_transactions = transactions.objects.filter(
+                        strategyNews_id=d.strategyNewsId).values()
+
+                    for transaction_i in response_transactions:
+
+                        data_i = convertJsonToObject(i)
+                        transaction_d = transactions.objects.get(
+                            id=transaction_i['id']
+                        )
+
+                        # Run Job for calculate profit
+                        data_i.broker = transaction_d.broker.broker
+                        # price_closed
+                        data_i.price_closed = transaction_d.price_closed
+                        # base_cost
+                        data_i.base_cost = transaction_d.base_cost
+                        # price_closed
+                        data_i.price_closed = transaction_d.price_closed
+                        # qty_close
+                        data_i.qty_close = transaction_d.qty_close
+                        # profit
+                        data_i.profit = transaction_d.profit
+                        # profit_percentage
+                        data_i.profit_percentage = transaction_d.profit_percentage
+
+                        response_data_buy.append(data_i)
+                        print("@Note-01 ---- 67629203 -----")
+
+            # Calculate the delta btw alpaca and tradingview positions.
+            broker_alpaca = []
+            broker_papertrade = []
+            for response in response_data_buy:
+                if response.broker == 'alpaca':
+                    # append the broker alpaca
+                    broker_alpaca.append(response)
+                elif response.broker == 'paperTrade':
+                    broker_papertrade.append(response)
+
+            # Calculate the difference
+            delta_brokers = []
+            for i in range(0, len(broker_alpaca), 1):
+
+                alpaca = broker_alpaca[i]
+                papertrade = broker_papertrade[i]
+
+                delta_profit = alpaca.profit - papertrade.profit
+                delta_profit_percentage = alpaca.profit_percentage - papertrade.profit_percentage
+                delta_qty_close = alpaca.qty_close - papertrade.qty_close
+                delta_base_cost = alpaca.base_cost - papertrade.base_cost
+                delta_price_closed = alpaca.price_closed - papertrade.price_closed
+
+                delta_brokers.append({
+                    'delta_profit': delta_profit,
+                    'delta_profit_percentage': delta_profit_percentage,
+                    'delta_qty_close': delta_qty_close,
+                    'delta_base_cost': delta_base_cost,
+                    'delta_price_closed': delta_price_closed,
+                    'symbol': alpaca.symbol})
+
+            print(delta_brokers)
+
+        # Search inside of the i object the symbol = 'BTCUSD'

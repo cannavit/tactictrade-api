@@ -37,7 +37,7 @@ class SettingsAPIview(generics.ListAPIView):
     filterset_fields = ['id', 'strategy_token', 'is_public']
 
     def get_queryset(self): 
-        #TODO this control not work with swagger view.  (Fixit)
+        #TODO this control not work with swagger view.  (Fix it)
 
         # if self.request.auth == None:
         #     return Response({
@@ -47,10 +47,26 @@ class SettingsAPIview(generics.ListAPIView):
 
         user = self.request.user
 
-        # Items.objects.filter(Q(jfield1=value) | Qj(field2=value))
-        # Filter using Or in Django
-        # Filter is owner or is_public
-        return strategyNews.objects.filter(Q(owner_id=user.id) | Q(is_public__in=[True])).order_by('-id')
+        category = self.request.query_params.get('category', None)
+
+        if category == 'me':
+            results = strategyNews.objects.filter(owner_id=user.id).order_by('-id')
+        elif category == 'favorite':
+            results = strategyNews.objects.filter(owner_id=user.id, favorite__in=[user.id]).order_by('-id')
+        elif category == 'winners':
+            # TODO Create logic for filter by winners strategies. 
+            results = strategyNews.objects.filter(Q(owner_id=user.id) | Q(is_public__in=[True])).order_by('-id')
+        elif category == 'top_short':
+            # TODO Create logic for filter by top_short strategies. 
+            results = strategyNews.objects.filter(Q(owner_id=user.id) | Q(is_public__in=[True])).order_by('-id')
+        elif category == 'top_long':
+            # TODO Create logic for filter by top_long strategies. 
+            results = strategyNews.objects.filter(Q(owner_id=user.id) | Q(is_public__in=[True])).order_by('-id')
+        elif category == 'all' or category == None:
+            # TODO Create logic for filter by top_long strategies. 
+            results = strategyNews.objects.filter(Q(owner_id=user.id) | Q(is_public__in=[True])).order_by('-id')
+
+        return results
 
 
 class PostSettingAPIview(generics.CreateAPIView):

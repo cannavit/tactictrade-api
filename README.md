@@ -96,3 +96,26 @@ Run app using gunicorn
 
     https://app.getpostman.com/join-team?invite_code=1385e8c0fa4028b6dd4a1f5aba276df5&target_code=68e4a0ff2d9a909547c1d23201a7de20
 
+
+## Backup Manual of the BD
+
+First the environment need to have installed the mongodump
+
+For MacOS
+
+    brew tap mongodb/brew
+    brew install mongodb-database-tools
+
+Create one backup 
+
+    python manage.py dbbackup
+
+Is neccesary add the follow fix:
+go to file when exist the error 
+
+" ImportError: cannot import name 'ugettext_lazy'"
+
+Add replace 
+    import name 'ugettext_lazy' 
+By 
+    import name 'gettext_lazy'

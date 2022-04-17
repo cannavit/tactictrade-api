@@ -11,9 +11,6 @@ class SettingListAPIview(ListCreateAPIView):
     permissions_class = (permissions.IsAuthenticated,) 
 
     def perform_create(self, serializer):
-        print("@Note-01 ---- -394491164 -----")
-        print(self.request)
-
         return serializer.save(owner=self.request.user)
 
     def get_queryset(self):

@@ -2,24 +2,10 @@
 # Import Other packages
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from utils.convert_json_to_objects import convertJsonToObject
 
-from apps.authentication.models import User
-from apps.broker.broker_close_trade import broker_close_trade_alpaca
-from apps.broker.broker_short_alpaca import broker_sell_short_alpaca
-from apps.broker.broker_short_papertrade import (broker_short_buy_papertrade,
-                                                 broker_short_sell_papertrade)
-# Import Brokers
-from apps.broker.brokers_connections.alpaca.long_buy import \
-    broker as broker_alpaca
-from apps.broker.brokers_connections.paper_trade.long_buy import broker as papertrade
-from apps.broker.brokers_connections.paper_trade.short import broker as papertrade_short
-
+from apps.broker.brokers_connections.trading_control import broker_selector
 from apps.broker.models import broker
-
-# from apps.broker.utils.papertrade import papertrade
-
-from apps.strategy.models import strategyNews, symbolStrategy
+from apps.strategy.models import strategyNews
 # Import Models Utils
 from apps.trading.models import strategy, trading_config
 from apps.trading.serializers import (strategySerializers,
@@ -28,7 +14,7 @@ from apps.trading.serializers import (strategySerializers,
 
 
 # Create your views here.
-class tradingConfigViews(generics.ListCreateAPIView):
+class trading_config_view(generics.ListCreateAPIView):
 
     serializer_class = tradingConfigSerializers
     queryset = trading_config.objects.all()
@@ -52,7 +38,7 @@ class tradingConfigViews(generics.ListCreateAPIView):
         try:
             strategy = strategyNews.objects.get(
                 id=body['strategyNews'])
-        except:
+        except Exception as e:
             # Return
             return Response({
                 "status": "error",
@@ -131,6 +117,7 @@ class tradingConfigViews(generics.ListCreateAPIView):
                 "is_crypto": True,
                 "variable_false": "short_allowed_fractional_crypto",
                 "mandatory_variable": "quantityQTYShort",
+                "mandatory_usd_variable": "quantityUSDShort",
                 "is_interger_value": False,
                 "message": "The broker not allow the fractional crypto trade"
             },
@@ -138,6 +125,7 @@ class tradingConfigViews(generics.ListCreateAPIView):
                 "is_crypto": True,
                 "variable_false": "long_allowed_fractional_crypto",
                 "mandatory_variable": "quantityQTYLong",
+                "mandatory_usd_variable": "quantityUSDLong",
                 "is_interger_value": False,
                 "message": "The broker not allow the fractional crypto trade"
             },
@@ -145,6 +133,7 @@ class tradingConfigViews(generics.ListCreateAPIView):
                 "is_crypto": False,
                 "variable_false": "short_allowed_fractional",
                 "mandatory_variable": "quantityQTYShort",
+                "mandatory_usd_variable": "quantityUSDShort",
                 "is_interger_value": False,
                 "message": "The broker not allow the fractional trade"
             },
@@ -152,6 +141,7 @@ class tradingConfigViews(generics.ListCreateAPIView):
                 "is_crypto": False,
                 "variable_false": "long_allowed_fractional",
                 "mandatory_variable": "quantityQTYLong",
+                "mandatory_usd_variable": "quantityUSDLong",
                 "is_interger_value": False,
                 "message": "The broker not allow the fractional trade"
             },
@@ -164,14 +154,14 @@ class tradingConfigViews(generics.ListCreateAPIView):
                     if not rule['is_interger_value']:
 
                         value_qty = body.get(rule['mandatory_variable'])
-
-                        if not body.get(rule['mandatory_variable']):
-                            # Return one error, not is allowed the fractional trade
-                            return Response({
-                                "status": "error",
-                                "message": rule['message'],
-                                "trade_rules": trade_rules
-                            }, status=status.HTTP_400_BAD_REQUEST)
+                        #TODO create the test controller
+                        # if not body.get(rule['mandatory_variable']) and not body.get(rule['mandatory_usd_variable']):
+                        #     # Return one error, not is allowed the fractional trade
+                        #     return Response({
+                        #         "status": "error",
+                        #         "message": rule['message'],
+                        #         "trade_rules": trade_rules
+                        #     }, status=status.HTTP_400_BAD_REQUEST)
                     else:
                         if not body.get(rule['mandatory_variable']):
                             # Return one error, not is allowed the fractional trade
@@ -229,7 +219,7 @@ class tradingConfigViews(generics.ListCreateAPIView):
         }, status=status.HTTP_200_OK)
 
 
-class tradingConfigSlugViews(generics.RetrieveUpdateDestroyAPIView):
+class trading_config_slug_views(generics.RetrieveUpdateDestroyAPIView):
 
     serializer_class = tradingConfigSerializers
     queryset = trading_config.objects.all()
@@ -303,7 +293,7 @@ class tradingConfigSlugViews(generics.RetrieveUpdateDestroyAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 
-class tradingConfigGetAllViews(generics.ListAPIView):
+class trading_config_get_all_view(generics.ListAPIView):
 
     serializer_class = tradingConfigSerializers
     queryset = trading_config.objects.all()
@@ -323,7 +313,7 @@ class tradingConfigGetAllViews(generics.ListAPIView):
         return trading_config.objects.filter(owner_id=user.id)
 
 
-class strategyView(generics.GenericAPIView):
+class strategy_view(generics.GenericAPIView):
 
     serializer_class = strategySerializers
     queryset = strategy.objects.all()
@@ -370,7 +360,6 @@ class strategyView(generics.GenericAPIView):
                 "price_open": 0,
                 "trade_type": 'long',
                 "is_winner": False
-
             },
             "short": {
                 "type": "buy",
@@ -399,157 +388,31 @@ class strategyView(generics.GenericAPIView):
 
             if tradingConfig.is_active == True:
 
-                quantityUSD = tradingConfig.quantityUSDLong
-                use = tradingConfig.useLong
-                stopLoss = tradingConfig.stopLossLong
-                takeProfit = tradingConfig.takeProfitLong
-                consecutiveLosses = tradingConfig.consecutiveLossesLong
                 brokerName = tradingConfig.broker.broker
-                brokerCapital = tradingConfig.broker.capital
 
-                options = {
-                    "owner_id": follow.id,
-                    "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                    "quantityUSD": quantityUSD,
-                    "use": use,
-                    "stopLoss": stopLoss,
-                    "takeProfit": takeProfit,
-                    "consecutiveLosses": consecutiveLosses,
-                    "brokerCapital": brokerCapital,
-                    "symbol": strategyData.symbol.symbolName_corrected
-                }
-
-                options = convertJsonToObject(options)
+                broker_controller = broker_selector(
+                    trading_config=tradingConfig,
+                    strategyNewsId=strategyNewsId,
+                    follower_id=follow.id,
+                    strategyData=strategyData,
+                )
 
                 # Create one Long Trade
-                if data['order'] == 'buy' and tradingConfig.is_active_long == True:
+                results = broker_controller.long_trade(
+                    order=data['order'],
+                    broker_name=brokerName,
+                    is_active_long=tradingConfig.is_active_long,
+                    results=results,
+                )
 
-                    options.order = 'buy'
-                    # Open Long Positions
-                    if brokerName == "paperTrade":
-                        # Open Long Trade [PAPERTRADE-BUY]
-                        results = papertrade(
-                            trading=tradingConfig,
-                            strategy=strategyData,
-                            operation='long'
-                        ).long_buy(
-                            options=options,
-                            results=results
-                        )
+                # Create Short Trade
+                results = broker_controller.short_trade(
+                    order=data['order'],
+                    broker_name=brokerName,
+                    is_active_short=tradingConfig.is_active_short,
+                    results=results,
+                )
 
-                    if brokerName == 'alpaca':
-                        # Open Long Trade [ALPACA-BUY]
-                        results = broker_alpaca(
-                            options=options,
-                            strategy=strategyData,
-                            trading=tradingConfig,
-                            results=results,
-                            operation='long'
-                        ).long_buy()
-
-                if data['order'] == 'sell' and tradingConfig.is_active_long == True:
-
-                    # Sell Short
-                    if brokerName == "paperTrade":
-                        # Open Short Trade [PAPERTRADE-SELL]
-
-                        results = papertrade(
-                            trading=tradingConfig,
-                            strategy=strategyData,
-                            operation='long'
-                        ).close_position(
-                            options=options,
-                            results=results,
-                        )
-
-                    if brokerName == 'alpaca':
-
-                        # CLOSE LONG TRADE [ALPACA-SELL]
-                        results = broker_alpaca(
-                            options=options,
-                            strategy=strategyData,
-                            trading=tradingConfig,
-                            results=results,
-                            operation='long'
-                        ).close_position()
-
-                if data['order'] == 'sell' and tradingConfig.is_active_short == True:
-
-                    options.order = 'sell'
-
-                    if brokerName == "paperTrade":
-                        results = papertrade_short(
-                            trading=tradingConfig,
-                            strategy=strategyData,
-                            options=options,
-                            results=results
-                        ).short_buy()
-
-                    if brokerName == 'alpaca':
-
-                        broker_sell_short_alpaca({
-                            "order": "sell",
-                            "owner_id": follow.id,
-                            "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                            "quantityUSD": quantityUSD,
-                            "use": use,
-                            "stopLoss": stopLoss,
-                            "takeProfit": takeProfit,
-                            "consecutiveLosses": consecutiveLosses,
-                            "brokerCapital": brokerCapital,
-                            "symbol": strategyData.symbol.symbolName_corrected
-                        },
-                            strategyData,
-                            tradingConfig,
-                            results)
-
-                if data['order'] == 'buy' and tradingConfig.is_active_short == True:
-                    options.order = 'buy'
-
-                    if brokerName == "paperTrade":
-
-                        results = papertrade_short(
-                            trading=tradingConfig,
-                            strategy=strategyData,
-                            options=options,
-                            results=results
-                        ).close_position()
-
-                        # broker_short_buy_papertrade({
-                        #     "order": "sell",
-                        #     "owner_id": follow.id,
-                        #     "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                        #     "quantityUSD": quantityUSD,
-                        #     "use": use,
-                        #     "stopLoss": stopLoss,
-                        #     "takeProfit": takeProfit,
-                        #     "consecutiveLosses": consecutiveLosses,
-                        #     "brokerCapital": brokerCapital,
-                        #     "symbol": strategyData.symbol.symbolName_corrected
-                        # },
-                        #     strategyData,
-                        #     tradingConfig,
-                        #     results
-                        # )
-
-                    if brokerName == 'alpaca':
-                        broker_close_trade_alpaca({
-                            "order": "sell",
-                            "owner_id": follow.id,
-                            "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                            "quantityUSD": quantityUSD,
-                            "use": use,
-                            "stopLoss": stopLoss,
-                            "takeProfit": takeProfit,
-                            "consecutiveLosses": consecutiveLosses,
-                            "brokerCapital": brokerCapital,
-                            "symbol": strategyData.symbol.symbolName_corrected
-                        },
-                            strategyData,
-                            tradingConfig,
-                            results,
-                            operation='short'
-                        )
 
         if are_followers:
             return Response({

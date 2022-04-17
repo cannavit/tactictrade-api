@@ -11,27 +11,30 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
+from backend import settings
 
 # Create test for RegisterSerializer
 class RegisterSerializerTest(APITestCase):
 
     def test_register_user(self):
-
-        # Create random name and email
-        name = ''.join(random.choice(string.ascii_uppercase +
-                       string.digits) for _ in range(10))
-        email = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                        for _ in range(10)) + '@test.com'
         
-        body = {
-            'username': name,
-            'email': email,
-            'password': 'Passw0rd!',
-        }
+        if settings.test_register_user:
 
-        response = self.client.post(reverse('register_new_user'), body)
-
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            # Create random name and email
+            name = ''.join(random.choice(string.ascii_uppercase +
+                           string.digits) for _ in range(10))
+            email = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                            for _ in range(10)) + '@test.com'
+            
+            body = {
+                'username': name,
+                'email': email,
+                'password': 'Passw0rd!',
+            }
+    
+            response = self.client.post(reverse('register_new_user'), body)
+    
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
 
 # Create test for the LoginSerializer 
@@ -53,7 +56,17 @@ class LoginSerializerTest(APITestCase):
                 )
 
         def test_login_user_not_verified(self):
-                
+
+            if settings.test_login_user_not_verified:
+
+                body = {
+                    'username': self.name,
+                    'password': 'Passw0rd!'
+                }
+
+                response = self.client.post(reverse('login_user'), body)
+
+                self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
                 body = {
                     'email': self.email,
                     'password': 'Passw0rd!',
@@ -64,7 +77,8 @@ class LoginSerializerTest(APITestCase):
                 self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
         def test_login_user_verified(self):
-
+            if settings.test_login_user_verified:
+            
                 body = {
                     'email': self.email,
                     'password': 'Passw0rd!',
@@ -76,8 +90,6 @@ class LoginSerializerTest(APITestCase):
                 user.save()
 
                 response = self.client.post(reverse('login'), body)  
-
-                print("response: ", response)
                 self.assertEqual(response.status_code, status.HTTP_200_OK)
 
                 # Save token value from request

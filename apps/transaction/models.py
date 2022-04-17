@@ -9,6 +9,8 @@ from yahoo_fin import stock_info as si
 from apps.authentication.models import User
 from apps.broker.models import broker
 from apps.strategy.models import strategyNews, symbolStrategy
+from apps.trading.models import trading_config
+
 
 
 class transactions(models.Model):
@@ -41,11 +43,11 @@ class transactions(models.Model):
         ('transactions_updated_calculate_profit', 'transactions_updated_calculate_profit')
     ]
 
-    owner = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    strategyNews = models.ForeignKey(to=strategyNews, on_delete=models.CASCADE)
-    broker = models.ForeignKey(to=broker, on_delete=models.CASCADE)
-
-    symbol = models.ForeignKey(to=symbolStrategy, on_delete=models.CASCADE)
+    owner = models.ForeignKey(to=User, on_delete=models.CASCADE,null=False)
+    strategyNews = models.ForeignKey(to=strategyNews, on_delete=models.CASCADE,null=False)
+    broker = models.ForeignKey(to=broker, on_delete=models.CASCADE,null=False)
+    trading_config = models.ForeignKey(to=trading_config, on_delete=models.CASCADE,null=False)
+    symbol = models.ForeignKey(to=symbolStrategy, on_delete=models.CASCADE, null=False)
 
     is_paper_trading = models.BooleanField(default=True, blank=True,null=True)
 
@@ -108,22 +110,54 @@ class transactions(models.Model):
 def pre_save_profit(sender, instance, *args, **kwargs):
 
     if instance.broker.broker == 'paperTrade':
-
         symbol = instance.strategyNews.symbol.symbolName_corrected
         price = si.get_live_price(symbol)
 
+    #TODO create logic for buy using qty 
+    trading_config = instance.trading_config
+
+    print(trading_config)
+
+    # CREATED TRANSACTION
+    if instance.id is None:
+
+
+        if instance.broker.broker == 'paperTrade':
+
+            if instance.operation == 'long':
+
+                spread_procentage = 0.000185
+
+                spread = price * spread_procentage
+                original_price = price
+
+                price = price + spread
+                qty = (instance.base_cost - spread) /price
+
+                instance.qty_open = qty
+
+                instance.price_open = original_price
+                instance.qty_close = qty
+
+            elif instance.operation == 'short':
+                print('This is one short')
+
+    # UPDATED TRANSACTION
+    else:
+
         if instance.operation == 'long':
 
-            spread_procentage = 0.0001661532086 #TODO calibrate this. 
-            spread = price * spread_procentage
+            if instance.broker.broker == 'paperTrade':
+                instance.price_closed = price
 
-            price = price + spread
-            qty = instance.base_cost/price
-            qty = round(qty, 3) - 0.001
-            instance.qty_open = qty
+            instance.close_cost = instance.qty_close * instance.price_closed    
+            instance.profit   = instance.close_cost - instance.base_cost      
 
-            instance.price_open = price
-            instance.qty_close = qty
+            instance.profit_percentage = pct_change(
+                float(instance.base_cost), float(instance.close_cost))
+            
+            instance.status = 'closed'
+            instance.isClosed = True
 
-        elif instance.operation == 'short':
-            print('This is one short')
+
+

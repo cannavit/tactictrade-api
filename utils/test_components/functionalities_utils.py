@@ -6,8 +6,10 @@ from apps.broker.api.views import (alpacaConfigurationSerializersView)
 from apps.broker.models import broker as broker_model
 from apps.strategy.api.views import PostSettingAPIview
 from apps.strategy.models import symbolStrategy
-from apps.trading.views import (strategyView,
-                                 tradingConfigViews)
+from apps.trading.views import (strategy_view,
+                                trading_config_view)
+
+from apps.trading.models import trading_config as trading_config_model
 # import settings.
 # Get Configuration from django settings
 from django.conf import settings
@@ -20,6 +22,8 @@ from rest_framework.test import (APIClient, APIRequestFactory, APITestCase,
                                  force_authenticate)
 from utils.brokers import broker_alpaca
 from utils.by_tests.select_test_material import trading_random_image
+
+from django.db.models import F
 
 
 class functionalities:
@@ -116,7 +120,7 @@ class functionalities:
         requests = factory.post(reverse('create_tradingValue'), tradingConfigBody, format='json',
                                 HTTP_AUTHORIZATION='Bearer {}'.format(token_access))
 
-        response = tradingConfigViews.as_view()(requests)
+        response = trading_config_view.as_view()(requests)
 
         return response
 
@@ -168,11 +172,11 @@ class functionalities:
             body_token_strategy['order'] = trade_type
 
         factory = APIRequestFactory()
-        
+
         request = factory.post(
             reverse('trade_push_with_strategy'), body_token_strategy, format='json')
 
-        response = strategyView.as_view()(request)
+        response = strategy_view.as_view()(request)
 
         return response
 
@@ -183,3 +187,75 @@ class functionalities:
         )
 
         return symbol_strategy
+
+    def disabled_buy_or_short_trading_config(user_id=None, strategyNews_id=None, disabled_short=False, disabled_long=False):
+
+        trading_config_obj_bot = trading_config_model.objects.get(
+            owner_id=user_id, strategyNews_id=strategyNews_id)
+
+        # Update the trading_config_obj_bot inside of the django database
+        # is_active_short
+
+        if disabled_short:
+            # ? Disabled data for short trade.
+            trading_config_obj_bot.is_active_short = False
+            # initialCapitalUSDShort
+            trading_config_obj_bot.initialCapitalUSDShort = None
+            # initialCapitalUSDShort
+            trading_config_obj_bot.initialCapitalQTYShort = None
+            # quantityQTYShort
+            trading_config_obj_bot.quantityQTYShort = None
+            # quantityUSDLong
+            trading_config_obj_bot.quantityUSDShort = None
+
+            trading_config_obj_bot.save()
+
+        if disabled_long:
+
+            # ? Disabled data for short trade.
+            trading_config_obj_bot.is_active_long = False
+            # initialCapitalUSDLong
+            trading_config_obj_bot.initialCapitalUSDLong = None
+            # initialCapitalUSDLong
+            trading_config_obj_bot.initialCapitalQTYLong = None
+            # quantityQTYLong
+            trading_config_obj_bot.quantityQTYLong = None
+            # quantityUSDLong
+            trading_config_obj_bot.quantityUSDLong = None
+
+        trading_config_obj_bot.save()
+
+    def disabled_all_short_long(disabled_short=False, disabled_long=False):
+        # TODO Inactive Not work fine.
+        # Disabled all Shorts variable form trading_config by Shorts
+        # Variables to be disabled:
+        # initialCapitalUSDShort=None
+        # initialCapitalQTYShort=None
+        # quantityQTYShort=None
+        # quantityUSDShort=None
+        # is_active_short=False
+        if disabled_short:
+            trading_config_model.objects.all().order_by('-id').update(
+                initialCapitalUSDShort=F(None),
+                initialCapitalQTYShort=F(None),
+                quantityQTYShort=F(None),
+                quantityUSDShort=F(None),
+                is_active_short=F(False)
+            )
+
+        # Disabled all Longs variable form trading_config by Longs
+        # Variables to be disabled:
+            # initialCapitalUSDLong=None
+            # initialCapitalQTYLong=None
+            # quantityQTYLong=None
+            # quantityUSDLong=None
+            # is_active_long=False
+
+        if disabled_long:
+            trading_config_model.objects.all().order_by('-id').update(
+                initialCapitalUSDLong=None,
+                initialCapitalQTYLong=None,
+                quantityQTYLong=None,
+                quantityUSDLong=None,
+                is_active_long=False
+            )

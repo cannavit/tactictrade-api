@@ -2,17 +2,14 @@ import json
 import random
 import string
 import time
-import requests
-
 
 import alpaca_trade_api as tradeapi
+import requests
 from apps.authentication.api.serializers import (LoginSerializer,
                                                  RegisterSerializer,
                                                  UserSocialSerializer)
-
 from apps.authentication.api.views import LoginAPIView, RegisterViewSet
 from apps.authentication.models import User
-
 from apps.broker.api.views import (alpacaConfigurationSerializersView,
                                    brokerSerializersView)
 # Create test for createStrategy
@@ -20,12 +17,12 @@ from apps.broker.models import broker as broker_model
 from apps.strategy.api.views import PostSettingAPIview
 from apps.strategy.models import strategyNews as strategy_model
 from apps.trading.models import trading_config
-
-from apps.trading.views import (strategyView, tradingConfigGetAllViews,
-                                tradingConfigSlugViews, tradingConfigViews)
-
+from apps.trading.views import (strategy_view, trading_config_get_all_view,
+                                trading_config_slug_views, trading_config_view)
 from apps.transaction.models import transactions
-
+from apps.transaction.updater import \
+    scheduler_transactions_updated_calculate_profit
+# import django settings
 # import settings.
 # Get Configuration from django settings
 from django.conf import settings
@@ -37,12 +34,13 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import (APIClient, APIRequestFactory, APITestCase,
                                  force_authenticate)
-from apps.transaction.updater import scheduler_transactions_updated_calculate_profit
 from utils.brokers import broker_alpaca
 from utils.by_tests.select_test_material import trading_random_image
 from utils.convert_json_to_objects import convertJsonToObject
-
 from utils.test_components.functionalities_utils import functionalities
+
+# import settings in django
+from backend import settings
 
 
 class TradingAlpacaLongCreateStrategy(APITestCase):
@@ -103,48 +101,50 @@ class TradingAlpacaLongCreateStrategy(APITestCase):
 
     def test_short_crypto(self):
 
-        #!  Create Strartegy
-        symbol = 'SOLUSD'
+        if settings.test_short_crypto:
 
-        self.body['symbol'] = symbol
+            #!  Create Strartegy
+            symbol = 'SOLUSD'
 
-        response_create_strategy = functionalities.create_strategy(
-            symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
+            self.body['symbol'] = symbol
 
-        response_strategyNews = response_create_strategy.data
+            response_create_strategy = functionalities.create_strategy(
+                symbol, body=self.body, user_id=self.user.id, token_access=self.token_access)
 
-        strategyNewsId = response_strategyNews['data']['strategyNewsId']
+            response_strategyNews = response_create_strategy.data
 
-        self.assertEqual(response_create_strategy.status_code,
-                         status.HTTP_200_OK)
+            strategyNewsId = response_strategyNews['data']['strategyNewsId']
 
-        strategy_obj = strategy_model.objects.get(id=strategyNewsId)
+            self.assertEqual(response_create_strategy.status_code,
+                             status.HTTP_200_OK)
 
-        email_bot = strategy_obj.email_bot
+            strategy_obj = strategy_model.objects.get(id=strategyNewsId)
 
-        # Get user using email_bot
-        user_bot = User.objects.get(email=email_bot)
+            email_bot = strategy_obj.email_bot
 
-        # get trading_config
-        trading_config_obj = trading_config.objects.get(owner=user_bot.id)
+            # Get user using email_bot
+            user_bot = User.objects.get(email=email_bot)
 
-        # Active Short configuration
-        trading_config.objects.filter(id=trading_config_obj.id).update(
-            is_active_short=True,
-            is_active_long=False,
-        )
+            # get trading_config
+            trading_config_obj = trading_config.objects.get(owner=user_bot.id)
 
-        #! Create Buy Alpaca-Broker Transaction trade_push_with_strategy
-        # Create SHORT BUY with tactictrade.
-        response_short_buy = functionalities.create_trade(
-            trade_type='sell', token=strategy_obj.strategy_token)
+            # Active Short configuration
+            trading_config.objects.filter(id=trading_config_obj.id).update(
+                is_active_short=True,
+                is_active_long=False,
+            )
 
-        self.assertEqual(
-            response_short_buy.status_code, status.HTTP_200_OK)
+            #! Create Buy Alpaca-Broker Transaction trade_push_with_strategy
+            # Create SHORT BUY with tactictrade.
+            response_short_buy = functionalities.create_trade(
+                trade_type='sell', token=strategy_obj.strategy_token)
 
-        #! Close the short position
-        response_short_sell = functionalities.create_trade(
-            trade_type='buy', token=strategy_obj.strategy_token)
+            self.assertEqual(
+                response_short_buy.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(
-            response_short_sell.status_code, status.HTTP_200_OK)
+            #! Close the short position
+            response_short_sell = functionalities.create_trade(
+                trade_type='buy', token=strategy_obj.strategy_token)
+
+            self.assertEqual(
+                response_short_sell.status_code, status.HTTP_200_OK)

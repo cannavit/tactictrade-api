@@ -2,14 +2,11 @@ from django.db import models
 from apps.authentication.models import User
 from apps.strategy.models import strategyNews
 from apps.broker.models import broker
-from apps.transaction.models import transactions
 # Create your models here.
 from django.db.models.signals import  pre_save
 from django.dispatch import receiver
 
 class trading_config(models.Model):
-
-    # trading_config = models.CharField(blank=True, null=True, max_length=30)
 
     owner = models.ForeignKey(to=User, on_delete=models.CASCADE)
     strategyNews = models.ForeignKey(to=strategyNews, on_delete=models.CASCADE)
@@ -41,6 +38,9 @@ class trading_config(models.Model):
     initialCapitalUSDLong = models.FloatField(default=0, blank=True,null=True)
     initialCapitalUSDShort = models.FloatField(default=0, blank=True,null=True)
     
+    initialCapitalQTYLong = models.FloatField(default=0, blank=True,null=True)
+    initialCapitalQTYShort = models.FloatField(default=0, blank=True,null=True)
+
     initialQuantityLong = models.FloatField(default=0, blank=True,null=True)
     initialQuantityShort = models.FloatField(default=0, blank=True,null=True)
 
@@ -50,7 +50,6 @@ class trading_config(models.Model):
     closedTradeLong = models.IntegerField(default=0, blank=True,null=True)
     profitPorcentageShort = models.FloatField(default=0, blank=True,null=True)
     profitPorcentageLong = models.FloatField(default=0, blank=True,null=True)
-
 
     # Control data
     is_active = models.BooleanField(default=False, blank=True,null=True)
@@ -72,7 +71,6 @@ class trading_config(models.Model):
     currentShortUSDvalue = models.FloatField(default=0,blank=True,null=True)
     percentageProfitShort = models.FloatField(default=0,blank=True,null=True)
 
-
     def __str__(self):
         return self.owner.email
 
@@ -90,7 +88,6 @@ class strategy(models.Model):
 
     def __str__(self):
         return self.strategy
-
 
 
 @receiver(pre_save, sender=trading_config)

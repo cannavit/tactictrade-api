@@ -88,8 +88,6 @@ class alpacaConfigurationSerializersView(generics.CreateAPIView):
         if not data['isPaperTrading']:
             tagPrice = 'Is Real Trading'
 
-        print(data['APIKeyID'])
-        print(data['SecretKey'])
 
         brokerExist = alpaca_configuration.objects.filter(
             APIKeyID=data['APIKeyID'],

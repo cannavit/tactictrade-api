@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.authentication.models import User,followers_mantainers
+from apps.authentication.models import User, followers_mantainers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from django.contrib import auth
@@ -30,6 +30,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     is_staff = serializers.BooleanField(default=False)
     is_verified = serializers.BooleanField(default=False)
     is_active = serializers.BooleanField(default=False)
+
     class Meta:
 
         model = User
@@ -59,10 +60,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
-
         validated_data['url_picture'] = 'https://eu.ui-avatars.com/api/?name=' + \
             validated_data['username'] + \
-            '&background=0D8ABC&color=fff'            
+            '&background=0D8ABC&color=fff'
 
         return User.objects.create_user(**validated_data)
 
@@ -121,7 +121,7 @@ class LoginSerializer(serializers.ModelSerializer):
             raise AuthenticationFailed("User is not verified")
 
         tokens = user.tokens
-        print(tokens)
+        
         return {
             'email': user.email,
             'username': user.username,

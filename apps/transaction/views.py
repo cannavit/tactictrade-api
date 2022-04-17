@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from apps.strategy.models import strategyNews
 from apps.authentication.models import User
-from apps.broker.broker_close_trade import broker_close_trade_alpaca
+from apps.broker.brokers_connections.alpaca.broker_close_trade import broker_close_trade_alpaca
 from apps.transaction.models import transactions
 from apps.transaction.serializers import (TransactionSelectSerializers,
                                           TransactionSelectSerializersGet,
@@ -38,7 +38,6 @@ class TransactionsView(generics.ListAPIView):
 
 
 class TransactionRecordsView(generics.ListAPIView):
-
 
     serializer_class = TransactionSelectSerializersGet
     queryset = transactions.objects.all()
@@ -79,7 +78,12 @@ class TransactionRecordsView(generics.ListAPIView):
 
             user_id = user_bot.id
 
-        return transactions.objects.filter(owner_id=user_id, strategyNews_id=strategy_id,isClosed__in=[True]).order_by('-id')
+        results = transactions.objects.filter(owner_id=user_id, strategyNews_id=strategy_id,isClosed__in=[True]).order_by('-id')
+        
+        # results = transactions.objects.get(owner_id=user_id, strategyNews_id=strategy_id,isClosed__in=[True])
+
+
+        return results
 
 
 

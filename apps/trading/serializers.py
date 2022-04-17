@@ -1,6 +1,7 @@
 from asyncore import read
 from urllib import response
 from aiohttp import request
+from numpy import require
 from rest_framework import serializers
 
 # Import Utils models
@@ -65,23 +66,33 @@ class tradingConfigSerializers(serializers.ModelSerializer):
     broker = serializers.PrimaryKeyRelatedField(
         read_only=False, queryset=broker.objects.all())
         
-    quantityUSDLong = serializers.FloatField(default=-1)
+    quantityUSDLong = serializers.FloatField(default=0.0)
+    quantityUSDShort = serializers.FloatField(default=0.0)
+    quantityQTYLong = serializers.FloatField(default=0.0)
+    quantityQTYShort = serializers.FloatField(default=0.0, required=False)
+
     useLong = serializers.BooleanField(default=True)
     stopLossLong = serializers.FloatField(default=-1)
     takeProfitLong = serializers.FloatField(default=-1)
     consecutiveLossesLong = serializers.IntegerField(default=-1)
-    quantityUSDShort = serializers.FloatField(default=-1)
+
     useShort = serializers.BooleanField(default=False)
     stopLossShort = serializers.FloatField(default=-1)
     takeProfitShort = serializers.FloatField(default=-1)
     consecutiveLossesShort = serializers.IntegerField(default=-1)
+
     is_active = serializers.BooleanField(default=True)
     is_active_short = serializers.BooleanField(default=True)
     is_active_long = serializers.BooleanField(default=True)
+
     close_trade_long_and_deactivate = serializers.BooleanField(default=False)
     close_trade_short_and_deactivate = serializers.BooleanField(default=False)
+
     initialCapitalUSDLong = serializers.FloatField(default=0)
     initialCapitalUSDShort = serializers.FloatField(default=0)
+    initialCapitalUSDLong = serializers.FloatField(default=0)
+    initialCapitalUSDShort = serializers.FloatField(default=0)
+
     winTradeLong = serializers.FloatField(default=0)
     winTradeShort = serializers.FloatField(default=0)
     closedTradeShort = serializers.FloatField(default=0)
@@ -97,12 +108,14 @@ class tradingConfigSerializers(serializers.ModelSerializer):
             'owner',
             'strategyNews',
             'broker',
-            'quantityUSDLong',
             'useLong',
             'stopLossLong',
             'takeProfitLong',
             'consecutiveLossesLong',
             'quantityUSDShort',
+            'quantityUSDLong',
+            'quantityQTYShort',
+            'quantityQTYLong',
             'useShort',
             'stopLossShort',
             'takeProfitShort',
@@ -114,12 +127,15 @@ class tradingConfigSerializers(serializers.ModelSerializer):
             'close_trade_short_and_deactivate',
             'initialCapitalUSDLong',
             'initialCapitalUSDShort',
+            'initialCapitalQTYLong',
+            'initialCapitalQTYShort',            
             'winTradeLong',
             'winTradeShort',
             'closedTradeShort',
             'closedTradeLong',
             'profitPorcentageShort',
             'profitPorcentageLong',
+
         ]
 
     def to_representation(self, instance):
@@ -130,6 +146,7 @@ class tradingConfigSerializers(serializers.ModelSerializer):
                         symbol=instance.strategyNews.symbol,
                         isClosed__in=[True],
                         strategyNews_id=instance.strategyNews.id,
+                        trading_config_id=instance.id,
             )
 
         
@@ -161,7 +178,6 @@ class tradingConfigSerializers(serializers.ModelSerializer):
 
 
         # Get Total Profit
-
 
         #? ------------------------------------------------------------ 
 
