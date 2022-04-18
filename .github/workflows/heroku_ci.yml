@@ -20,6 +20,8 @@ env:
 jobs:
   Build-Deploy-Heroku:
     runs-on: ubuntu-latest
+    env:
+      working-directory: ./
     steps:      
       - uses: actions/checkout@v2
       - name: Run script file
