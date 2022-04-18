@@ -29,12 +29,16 @@ jobs:
 
 
       - name: Create the .env File 
-        run: echo "$ENV" | base64 --decode > .env    
+        # run: echo "$ENV" | base64 --decode > .env    
+        run: echo "HELLO TEST" | base64 --decode > .env    
+
 
       - uses: actions/checkout@v2
       - name: Run script file
         run: |
            ls -a
+           cat .env
+           
         shell: bash
 
       - name: Check if exist file 
