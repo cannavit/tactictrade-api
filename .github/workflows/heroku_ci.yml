@@ -20,7 +20,14 @@ env:
 jobs:
   Build-Deploy-Heroku:
     runs-on: ubuntu-latest
-    steps:        
+    steps:      
+      - name: version
+        run: $RELEASE_REVISION 
+      - name: Check if exist files. 
+        uses: actions/github-script@v6
+        with:
+          script: |
+            ls
       - name: Create the .env File 
         run: echo "$ENV" | base64 --decode > .env    
       - name: Check if exist file 
@@ -42,10 +49,10 @@ jobs:
       run: ls
     - name: Build docker
       # run:  ./vendor/bin/sail build --no-cache
-      run:  docker build -t  $IMAGE:latest .
+      run:  docker build -t  "${{IMAGE}}":latest .
            
     - name: docker tag
-      run: docker tag  $IMAGE:latest $IMAGE:"${{ github.ref_name }}"
+      run: docker tag  $IMAGE:latest "${{IMAGE}}":"${{ github.ref_name }}"
 
     - name: docker images 
       run:  docker images
@@ -57,4 +64,4 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Pull Image from ghcr.io
-      run: docker push $IMAGE:"${{ github.ref_name }}"
+      run: docker push "${{IMAGE}}":"${{ github.ref_name }}"
