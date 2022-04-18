@@ -2,11 +2,9 @@ import json
 import re
 import secrets
 
-from requests import patch
-
 from apps.authentication.models import User
-from apps.broker.utils.init_broker import InitData
 from apps.broker.models import broker as broker_model
+from apps.broker.utils.init_broker import InitData
 from apps.strategy.api.serializers import (CreateSettingSerializers,
                                            OwnerStrategySerializers,
                                            PutSettingSerializers,
@@ -20,6 +18,7 @@ from django.db.models import Q
 from django.views.generic import DetailView
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_multiple_model.views import ObjectMultipleModelAPIView
+from requests import patch
 from rest_framework import filters, generics, permissions, status
 from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.response import Response
@@ -27,6 +26,7 @@ from utils.create_bot_by_new_strategy import create_bot_by_new_strategy
 from utils.upload.imagekit import upload_image_imagekit
 
 from ..utils import get_symbolName
+
 
 class SettingsAPIview(generics.ListAPIView):
 
@@ -54,9 +54,9 @@ class SettingsAPIview(generics.ListAPIView):
         if category == 'me':
             results = strategyNews.objects.filter(owner_id=user.id).order_by('-id')
         elif category == 'favorite':
-            results = strategyNews.objects.filter(favorite__in=[user.id]).order_by('-id')
+            results = strategyNews.objects.filter(owner_id=user.id,favorite__in=[user.id]).order_by('-id')
         elif category == 'likes':
-            results = strategyNews.objects.filter(likes__in=[user.id]).order_by('-id')            
+            results = strategyNews.objects.filter(owner_id=user.id,likes__in=[user.id]).order_by('-id')            
         elif category == 'winners':
             # TODO Create logic for filter by winners strategies. 
             results = strategyNews.objects.filter(Q(owner_id=user.id) | Q(is_public__in=[True])).order_by('-id')

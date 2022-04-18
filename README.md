@@ -119,3 +119,13 @@ Add replace
     import name 'ugettext_lazy' 
 By 
     import name 'gettext_lazy'
+
+
+
+### Manual Deploy in Heroku
+
+    heroku create --app tactictrade-api
+
+    heroku run python backup/manage.py migrate --app tactictrade-api
+
+    git push heroku --app tactictrade-api

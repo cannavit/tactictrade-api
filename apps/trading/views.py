@@ -312,7 +312,21 @@ class trading_config_get_all_view(generics.ListAPIView):
 
         user = self.request.user
 
-        return trading_config.objects.filter(owner_id=user.id)
+        # Get the parameter of the request
+        category = self.request.query_params.get('category', None)
+        if category == 'active':
+            results = trading_config.objects.filter(owner_id=user.id, is_active_short__in=[True], is_active_long__in=[True])
+        elif category == 'inactive':
+            results = trading_config.objects.filter(owner_id=user.id, is_active_short__in=[False], is_active_long__in=[False])
+        elif category == 'winners':
+            results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__gte=0, profitPorcentageLong__gte=0)
+        elif category == 'losses':
+            results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__lte=0, profitPorcentageLong__lte=0)
+        else:
+            results = trading_config.objects.filter(owner_id=user.id)
+
+
+        return results
 
 
 class strategy_view(generics.GenericAPIView):
