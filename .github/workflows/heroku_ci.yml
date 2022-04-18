@@ -40,28 +40,28 @@ jobs:
           heroku_email: $HEROKU_EMAIL
           usedocker: true
 
-  Build-Image:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Create the .env File 
-      run: echo "$ENV" | base64 --decode > .env
-    - name: Check if exist the .env File 
-      run: ls
-    - name: Build docker
-      # run:  ./vendor/bin/sail build --no-cache
-      run:  docker build -t  "${{IMAGE}}":latest .
+  # Build-Image:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - name: Create the .env File 
+  #     run: echo "$ENV" | base64 --decode > .env
+  #   - name: Check if exist the .env File 
+  #     run: ls
+  #   - name: Build docker
+  #     # run:  ./vendor/bin/sail build --no-cache
+  #     run:  docker build -t  "${{IMAGE}}":latest .
            
-    - name: docker tag
-      run: docker tag  $IMAGE:latest "${{IMAGE}}":"${{ github.ref_name }}"
+  #   - name: docker tag
+  #     run: docker tag  $IMAGE:latest "${{IMAGE}}":"${{ github.ref_name }}"
 
-    - name: docker images 
-      run:  docker images
+  #   - name: docker images 
+  #     run:  docker images
 
-    - name: Log in to the Container registry
-      uses: docker/login-action@v1
-      with:
-        registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    - name: Pull Image from ghcr.io
-      run: docker push "${{IMAGE}}":"${{ github.ref_name }}"
+  #   - name: Log in to the Container registry
+  #     uses: docker/login-action@v1
+  #     with:
+  #       registry: ghcr.io
+  #       username: ${{ github.actor }}
+  #       password: ${{ secrets.GITHUB_TOKEN }}
+  #   - name: Pull Image from ghcr.io
+  #     run: docker push "${{IMAGE}}":"${{ github.ref_name }}"
