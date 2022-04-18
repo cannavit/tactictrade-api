@@ -21,11 +21,11 @@ jobs:
   Build-Deploy-Heroku:
     runs-on: ubuntu-latest
     steps:      
-      - name: Check if exist files. 
-        uses: actions/github-script@v6
-        with:
-          script: |
-            ls
+      - uses: actions/checkout@v2
+      - name: Run script file
+        run: |
+           ls
+        shell: bash
       - name: Create the .env File 
         run: echo "$ENV" | base64 --decode > .env    
       - name: Check if exist file 
