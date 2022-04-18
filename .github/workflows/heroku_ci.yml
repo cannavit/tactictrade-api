@@ -6,20 +6,28 @@ on:
   push:
     branches: [staging]
 
+
+jobs:
+  Build-Deploy-Heroku:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
+      with:
+        php-version: '8.1'
+    - uses: actions/checkout@v2
+
+    - name: Install Dependencies
+      run: composer install --ignore-platform-reqs
+
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Check if exist file 
-        run: pwd   
-      - name: Check if exist file 
-        run: ls   
+    steps:        
       - name: Create the .env File 
         run: echo "${{secrets.ENV_STAGING }}" | base64 --decode > .env    
-
       - name: Check if exist file 
         run: ls     
-      
       - uses: actions/checkout@v2
       - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
         with:
@@ -27,3 +35,36 @@ jobs:
           heroku_app_name: ${{ secrets.HEROKU_APP_NAME }} #Must be unique in Heroku
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
           usedocker: true
+
+
+jobs:
+  Build-Image:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: shivammathur/setup-php@15c43e89cdef867065b0213be354c2841860869e
+    - uses: actions/checkout@v2
+
+    - name: Create the .env File 
+      run: echo "${{secrets.ENV_STAGING }}" | base64 --decode > .env
+
+    - name: Check if exist the .env File 
+      run: ls
+
+    - name: Build docker
+      # run:  ./vendor/bin/sail build --no-cache
+      run:  docker build -t  ghcr.io/cannavit/tactictrade-api:latest .
+           
+    - name: docker tag
+      run: docker tag  ghcr.io/cannavit/tactictrade-api:latest ghcr.io/cannavit/tactictrade-api:"${{ github.ref_name }}"
+
+    - name: docker images 
+      run:  docker images
+
+    - name: Log in to the Container registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Pull Image from ghcr.io
+      run: docker push ghcr.io/cannavit/tactictrade-api:"${{ github.ref_name }}"
