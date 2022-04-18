@@ -28,9 +28,11 @@ jobs:
         shell: bash
 
 
+      - uses: actions/checkout@v2
       - name: Create the .env File 
-        # run: echo "$ENV" | base64 --decode > .env    
-        run: echo  "${{secrets.ENV_STAGING }}"| base64 --decode > .env    
+        run: |
+           echo  "${{secrets.ENV_STAGING }}"| base64 --decode > .env 
+
 
       - uses: actions/checkout@v2
       - name: Run script file
