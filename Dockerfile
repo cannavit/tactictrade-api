@@ -41,4 +41,6 @@ COPY . .
 # RUN python manage.py migrate
 
 #run gunicorn. here pdfconverter is the project name
-CMD gunicorn --workers=4 -b 0.0.0.0:$PORT backend.wsgi:application
+# CMD gunicorn --workers=4 -b 0.0.0.0:$PORT backend.wsgi:application
+
+CMD gunicorn --workers=4 -b 0.0.0.0:8000 backend.wsgi:application
