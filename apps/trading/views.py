@@ -103,16 +103,18 @@ class trading_config_view(generics.ListCreateAPIView):
         ]
 
         # Check if is allowed the trade if is not crypto trade
-        for rule in rules_controller:
-            if rule['is_crypto'] == is_crypto:
-                if not getattr(broker_obj, rule['variable_false']):
+        # for rule in rules_controller:
+            # if rule['is_crypto'] == is_crypto:
+                # if not getattr(broker_obj, rule['variable_false']):
 
-                    if request.data[rule['request_data_variable']] == True:
-                        return Response({
-                            "status": "error",
-                            "message": rule['message'],
-                            "trade_rules": trade_rules
-                        }, status=status.HTTP_400_BAD_REQUEST)
+                    # if request.data[rule['request_data_variable']] == True:
+                        #TODO fix this controller
+                        # print("@Note-01 ---- 320551155 -----")
+                        # return Response({
+                        #     "status": "error",
+                        #     "message": rule['message'],
+                        #     "trade_rules": trade_rules
+                        # }, status=status.HTTP_400_BAD_REQUEST)
 
         rule_controller = [
             {
