@@ -36,9 +36,9 @@ RUN pip install -r /app/requirements.txt
 #copy the project
 COPY . .
 
-# RUN python manage.py makemigrations
+RUN python manage.py makemigrations
 
-# RUN python manage.py migrate
+RUN python manage.py migrate
 
 #run gunicorn. here pdfconverter is the project name
 # CMD gunicorn --workers=4 -b 0.0.0.0:$PORT backend.wsgi:application
