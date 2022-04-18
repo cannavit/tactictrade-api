@@ -10,6 +10,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+      - name: Check if exist file 
+        run: pwd   
+      - name: Check if exist file 
+        run: ls   
       - name: Create the .env File 
         run: echo "${{secrets.ENV_STAGING }}" | base64 --decode > .env    
 
