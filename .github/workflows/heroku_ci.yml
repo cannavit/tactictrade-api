@@ -33,7 +33,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Create the .env File 
         run: |
-           touch .env
            echo  "${{secrets.ENV_STAGING }}"| base64 --decode > .env 
            ls -a
 
