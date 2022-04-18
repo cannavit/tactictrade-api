@@ -5,39 +5,47 @@ name: Deploy to heroku.
 on:
   push:
     branches: [staging]
+  pull_request:
+    branches: [ staging ]
 
+env:
+  RELEASE_REVISION: "pr-${{ github.event.pull_request.number }}-${{ github.event.pull_request.head.sha }}"
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  HEROKU_API_KEY: ${{secrets.HEROKU_API_KEY}}
+  HEROKU_APP_NAME: ${{ secrets.HEROKU_APP_NAME }} 
+  HEROKU_EMAIL: ${{ secrets.HEROKU_EMAIL }}
+  ENV: ${{secrets.ENV_STAGING }}
+  IMAGE: ghcr.io/cannavit/tactictrade-api
 
 jobs:
   Build-Deploy-Heroku:
     runs-on: ubuntu-latest
     steps:        
       - name: Create the .env File 
-        run: echo "${{secrets.ENV_STAGING }}" | base64 --decode > .env    
+        run: echo "$ENV" | base64 --decode > .env    
       - name: Check if exist file 
         run: ls     
       - uses: actions/checkout@v2
       - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
         with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: ${{ secrets.HEROKU_APP_NAME }} #Must be unique in Heroku
-          heroku_email: ${{ secrets.HEROKU_EMAIL }}
+          heroku_api_key: $HEROKU_API_KEY
+          heroku_app_name: $HEROKU_APP_NAME
+          heroku_email: $HEROKU_EMAIL
           usedocker: true
 
   Build-Image:
     runs-on: ubuntu-latest
     steps:
     - name: Create the .env File 
-      run: echo "${{secrets.ENV_STAGING }}" | base64 --decode > .env
-
+      run: echo "$ENV" | base64 --decode > .env
     - name: Check if exist the .env File 
       run: ls
-
     - name: Build docker
       # run:  ./vendor/bin/sail build --no-cache
-      run:  docker build -t  ghcr.io/cannavit/tactictrade-api:latest .
+      run:  docker build -t  $IMAGE:latest .
            
     - name: docker tag
-      run: docker tag  ghcr.io/cannavit/tactictrade-api:latest ghcr.io/cannavit/tactictrade-api:"${{ github.ref_name }}"
+      run: docker tag  $IMAGE:latest $IMAGE:"${{ github.ref_name }}"
 
     - name: docker images 
       run:  docker images
@@ -49,4 +57,4 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Pull Image from ghcr.io
-      run: docker push ghcr.io/cannavit/tactictrade-api:"${{ github.ref_name }}"
+      run: docker push $IMAGE:"${{ github.ref_name }}"
