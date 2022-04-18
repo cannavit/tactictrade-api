@@ -252,7 +252,7 @@ typings/
 jwt-data
 
 # VS Code
-
+.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
@@ -264,6 +264,7 @@ uploads
 uploads_safe
 
 # visaul code config: 
+.vscode
 
 # .prettierc Configuration.
 .prettierignore
