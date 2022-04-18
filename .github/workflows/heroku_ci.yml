@@ -23,8 +23,6 @@ jobs:
           heroku_email: ${{ secrets.HEROKU_EMAIL }}
           usedocker: true
 
-
-jobs:
   Build-Image:
     runs-on: ubuntu-latest
     steps:
