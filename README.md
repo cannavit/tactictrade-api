@@ -140,7 +140,13 @@ By
 
     heroku container:release web
 
-
+## Create file for github-secrets
+    
+    openssl base64 -in .env\
 ## Run in localhost with Dockerfile 
 
-    openssl base64 -in .env
+
+
+    docker build -t cannavit/tactictrade-api:latest -f Dockerfile .
+
+    docker run -d -p 8000:8000 --name tactictrade-api cannavit/tactictrade-api:latest
