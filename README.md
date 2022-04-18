@@ -122,10 +122,25 @@ By
 
 
 
-### Manual Deploy in Heroku
+### Create Heroku project 
 
     heroku create --app tactictrade-api
 
     heroku run python backup/manage.py migrate --app tactictrade-api
+### Manual Deploy in Heroku
 
-    git push heroku --app tactictrade-api
+
+    heroku login
+
+    heroku container:login
+    
+    heroku container:push tactictrade-api
+
+    heroku container:release tactictrade-api
+
+    heroku container:release web
+
+
+## Run in localhost with Dockerfile 
+
+    openssl base64 -in .env
