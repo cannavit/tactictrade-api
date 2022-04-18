@@ -53,6 +53,7 @@ ALLOWED_HOSTS = [
     'django-backend-steging.herokuapp.com',
     'tactictrade-api-staging.herokuapp.com',
     'tactictrade-api-staging.herokuapp.com',
+    'tactictrade-api.herokuapp.com'
     '*'
 ]
 
