@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:      
       - name: version
-        run: $RELEASE_REVISION 
+        run: ${{RELEASE_REVISION}} 
       - name: Check if exist files. 
         uses: actions/github-script@v6
         with:
