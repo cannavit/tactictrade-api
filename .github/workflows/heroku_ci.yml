@@ -24,23 +24,11 @@ jobs:
       working-directory: ./
     steps:      
       - uses: actions/checkout@v2
-      - name: Run script file
-        run: |
-           ls -a
-        shell: bash
-
-
-      # - uses: actions/checkout@v2
-      # - name: Create the .env File 
-      #   run: |
-      #      echo  "${{secrets.ENV_STAGING }}"| base64 --decode > .env 
-      #      ls -a
-
-      - uses: actions/checkout@v2
-      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+      - name: Create the .env File 
         run: |
            echo  "${{secrets.ENV_STAGING }}"| base64 --decode > .env 
-           ls -a
+           ls -a           
+      - uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
         with:
           heroku_api_key: $HEROKU_API_KEY
           heroku_app_name: $HEROKU_APP_NAME
