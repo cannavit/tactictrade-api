@@ -32,6 +32,7 @@ class brokerSerializersView(generics.ListAPIView):
         responseModel = self.queryset.filter(owner=self.request.user)
 
         values = responseModel.count()
+        
         if responseModel.count() == 0:
             InitData.init_broker(self.request.user.id)
             responseModel = self.queryset.filter(owner=self.request.user)

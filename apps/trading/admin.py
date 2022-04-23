@@ -1,10 +1,14 @@
+from django import shortcuts
 from django.contrib import admin
+from django.forms import ValidationError
 
 from apps.broker.brokers_connections.trading_control import broker_selector
 from .models import trading_config
 from django.contrib import messages
 
+from apps.transaction.models import transactions as transaction_model
 
+from apps.strategy.models import strategyNews as strategy_model
 # from .models import trading_parameters
 # Register your models here.
 
@@ -41,53 +45,69 @@ results = {
         }
 
 
+#* instance: is trading_config
+def trading_action(instance, order='sell'):
+    
+    if order == 'buy' or order == 'sell':
+        success_message = ""
+        #! Close old short        
+        #! Open New Trade [OPEN-OPERATIONS-LONG-BUY]
+        # Open a new trade
+        try:
+
+            response = transaction_model.objects.create(
+                owner_id=instance.owner_id,
+                strategyNews_id=instance.strategyNews_id,
+                broker_id=instance.broker_id,
+                symbol_id=instance.strategyNews.symbol.id,
+                trading_config_id=instance.id,
+                order=order
+            )
+
+            success_message = 'Success Open Trade ' + order + ' ' + str(response.id)
+
+        except Exception as e:
+            raise ValidationError(str(e))
+
+
+
+
 @admin.action(description='Create Long Trade')
 def create_long_order(modeladmin, request, queryset):
 
     for instance in queryset:
+        #! Use only when is paper trading. 
+        #? Note not use when is real trading.
+        ## Close Open transaction
+        if instance.is_paper_trading:
+            try:
+                message_success = trading_action(instance, order='buy')
+                messages.success(request, message_success)
+                # Close the open transaction if is opened.
+            except Exception as e:
+                messages.error(request, str(e))
 
-        tradingConfig = trading_config.objects.get(
-            owner_id=instance.owner_id, strategyNews_id=instance.strategyNews_id)
 
-        # Create Long Trade From Admin.
-
-        broker_selector(
-            trading_config=tradingConfig,
-            strategyNewsId=instance.strategyNews_id,
-            follower_id=instance.owner_id,
-            strategyData=instance.strategyNews
-        ).long_trade(
-            order='buy',
-            broker_name=instance.broker.broker,
-            is_active_long=tradingConfig.is_active_long,
-            results=results,
-        )
-
-        messages.success(request, 'Long Trade Created')
 
 @admin.action(description='Create Short Trade')
 def create_short_order(modeladmin, request, queryset):
 
     for instance in queryset:
 
-        tradingConfig = trading_config.objects.get(
-            owner_id=instance.owner_id, strategyNews_id=instance.strategyNews_id)
+        #! Use only when is paper trading. 
+        #? Note not use when is real trading.
 
-        # Create Long Trade From Admin.
+        if instance.is_paper_trading:
+            try:
+                message_success = trading_action(instance, order='sell')
+                messages.success(request, message_success)
+                # Close the open transaction if is opened.
+            except Exception as e:
+                messages.error(request, str(e))
+  
 
-        broker_selector(
-            trading_config=tradingConfig,
-            strategyNewsId=instance.strategyNews_id,
-            follower_id=instance.owner_id,
-            strategyData=instance.strategyNews
-        ).short_trade(
-            order='sell',
-            broker_name=instance.broker.broker,
-            is_active_short=tradingConfig.is_active_short,
-            results=results,
-        )
 
-        messages.success(request, 'Long Trade Created')
+
 
 
 
@@ -99,6 +119,7 @@ class trading_config_admin(admin.ModelAdmin):
         'owner',
         'strategyNews',
         'broker',
+        
         'is_paper_trading',
         'is_active_short',
         'is_active_long',

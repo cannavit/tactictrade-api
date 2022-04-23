@@ -77,7 +77,7 @@ class broker:
         return results
 
     # Close operation in paper trade for long.
-    def close_position(self, options={}, results={}):
+    def close_position (self, options={}, results={}):
 
         if self.count > 0 and self.isClosed == False:
 

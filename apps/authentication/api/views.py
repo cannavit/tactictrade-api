@@ -151,7 +151,7 @@ class UserCreate(generics.CreateAPIView):
     permission_classes = (AllowAny, )
 
     # def post(self, request):
-    # print("@Note-01 ---- -1871608462 -----")
+    # print("@Note-01 ---- -1871608462 -----")p
 
 
 class LoginAPIView(generics.GenericAPIView):
@@ -180,6 +180,7 @@ about_input = openapi.Parameter(
     'about', in_=openapi.IN_QUERY, type=openapi.TYPE_STRING)
 profile_image_input = openapi.Parameter(
     'profile_image', in_=openapi.IN_QUERY, type=openapi.TYPE_FILE)
+
 # is_public_input = openapi.Parameter(
 #     'is_public', in_=openapi.IN_QUERY, type=openapi.T)
 

@@ -15,7 +15,7 @@ from apps.trading.serializers import (strategySerializers,
 
 
 from apps.transaction.models import transactions as transaction_model
-# Create your views here.
+# Create your views here.t
 class trading_config_view(generics.ListCreateAPIView):
 
     serializer_class = tradingConfigSerializers
@@ -466,3 +466,236 @@ class strategy_view(generics.GenericAPIView):
                 "message": "Strategy not have any follower",
                 "data": results,
             }, status=status.HTTP_204_NO_CONTENT)
+
+
+
+class tradingOpenLongView(generics.GenericAPIView):
+
+    serializer_class = strategySerializers
+    queryset = strategy.objects.all()
+    permission_classes = (permissions.AllowAny, )
+
+    def post(self, request, pk):
+
+        # Check if the token is valid 
+        if self.request.auth== None:
+
+            return Response({
+                "status": "error",
+                "message": "Authentication required or invalid token"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get parameter pk from request data django
+        # TODO, Update the test for send the pk how parameter.
+        trading_config_id = self.kwargs['pk']
+        print(trading_config_id)
+        
+        userId = request.user.id
+        try: 
+            trading_config_obj = trading_config.objects.get(id=trading_config_id, owner_id=userId)
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": "Trading config not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+        strategy_obj = trading_config_obj.strategyNews
+
+        # Get Strategy News
+        if strategy_obj.is_active == False:
+            return Response({
+                "status": "error",
+                "message": "Strategy not active",
+            }, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        results = {
+            "long":  {
+                "type": "buy",
+                "transaction_opened": 0,
+                "transaction_closed": 0,
+                "follower_id_closed": [],
+                "symbol": "",
+                "follower_id_opened": [],
+                "spread": 0,
+                "qty": 0,
+                "price_open": 0,
+                "trade_type": 'long',
+                "is_winner": False
+            },
+            "short": {
+                "type": "buy",
+                "transaction_opened": 0,
+                "transaction_closed": 0,
+                "symbol": "",
+                "follower_id_closed": [],
+                "follower_id_opened": [],
+                "spread": 0,
+                "qty": 0,
+                "price_open": 0,
+                "trade_type": 'short',
+                "number_stocks": 0,
+                "is_winner": False
+            }
+        }
+
+        try:
+            transaction_obj = transaction_model.objects.get(
+                owner_id=userId,
+                strategyNews_id=strategy_obj.id, 
+                broker_id=trading_config_obj.broker.id,
+                trading_config=trading_config_obj.id,
+                symbol_id=strategy_obj.symbol.id,
+                isClosed__in=[False],   
+            )
+            transaction_is_open = True
+        except Exception as e:
+            transaction_obj = None
+            transaction_is_open = False
+
+        broker_controller = broker_selector(
+            trading_config=trading_config_obj,
+            strategyNewsId=strategy_obj.id,
+            follower_id=userId,
+            strategyData=strategy_obj,
+            transaction_is_open=transaction_is_open,
+            transaction_obj=transaction_obj,
+        )
+
+        # Create one Long Trade
+        results = broker_controller.long_trade(
+            order='buy',
+            broker_name=trading_config_obj.broker.broker,
+            is_active_long=trading_config_obj.is_active_long,
+            results=results,
+        )
+
+        # # Create Short Trade
+        # results = broker_controller.short_trade(
+        #     order=,
+        #     broker_name=brokerName,
+        #     is_active_short=tradingConfig.is_active_short,
+        #     results=results,
+        # )
+
+        return Response({
+            "status": "success",
+            "message": "Strategy executed successfully",
+            "data": results,
+        }, status=status.HTTP_200_OK)
+
+
+class tradingOpenShortView(generics.GenericAPIView):
+
+    serializer_class = strategySerializers
+    queryset = strategy.objects.all()
+    permission_classes = (permissions.AllowAny, )
+
+    def post(self, request, pk):
+
+        # Check if the token is valid 
+        if self.request.auth== None:
+
+            return Response({
+                "status": "error",
+                "message": "Authentication required or invalid token"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get parameter pk from request data django
+        # TODO, Update the test for send the pk how parameter.
+        trading_config_id = self.kwargs['pk']
+        print(trading_config_id)
+        
+        userId = request.user.id
+        try: 
+            trading_config_obj = trading_config.objects.get(id=trading_config_id, owner_id=userId)
+        except Exception as e:
+            return Response({
+                "status": "error",
+                "message": "Trading config not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+
+
+        strategy_obj = trading_config_obj.strategyNews
+
+        # Get Strategy News
+        if strategy_obj.is_active == False:
+            return Response({
+                "status": "error",
+                "message": "Strategy not active",
+            }, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        results = {
+            "long":  {
+                "type": "buy",
+                "transaction_opened": 0,
+                "transaction_closed": 0,
+                "follower_id_closed": [],
+                "symbol": "",
+                "follower_id_opened": [],
+                "spread": 0,
+                "qty": 0,
+                "price_open": 0,
+                "trade_type": 'long',
+                "is_winner": False
+            },
+            "short": {
+                "type": "buy",
+                "transaction_opened": 0,
+                "transaction_closed": 0,
+                "symbol": "",
+                "follower_id_closed": [],
+                "follower_id_opened": [],
+                "spread": 0,
+                "qty": 0,
+                "price_open": 0,
+                "trade_type": 'short',
+                "number_stocks": 0,
+                "is_winner": False
+            }
+        }
+
+        try:
+            transaction_obj = transaction_model.objects.get(
+                owner_id=userId,
+                strategyNews_id=strategy_obj.id, 
+                broker_id=trading_config_obj.broker.id,
+                trading_config=trading_config_obj.id,
+                symbol_id=strategy_obj.symbol.id,
+                isClosed__in=[False],   
+            )
+            transaction_is_open = True
+        except Exception as e:
+            transaction_obj = None
+            transaction_is_open = False
+
+        broker_controller = broker_selector(
+            trading_config=trading_config_obj,
+            strategyNewsId=strategy_obj.id,
+            follower_id=userId,
+            strategyData=strategy_obj,
+            transaction_is_open=transaction_is_open,
+            transaction_obj=transaction_obj,
+        )
+
+        # Create one Long Trade
+        # results = broker_controller.long_trade(
+        #     order='buy',
+        #     broker_name=trading_config_obj.broker.broker,
+        #     is_active_long=trading_config_obj.is_active_long,
+        #     results=results,
+        # )
+
+        # # Create Short Trade
+        results = broker_controller.short_trade(
+            order='sell',
+            broker_name=trading_config_obj.broker.broker,
+            is_active_short=trading_config_obj.is_active_short,
+            results=results,
+        )
+
+        return Response({
+            "status": "success",
+            "message": "Strategy executed successfully",
+            "data": results,
+        }, status=status.HTTP_200_OK)

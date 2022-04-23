@@ -14,6 +14,7 @@ from apps.transaction.serializers import (TransactionSelectSerializers,
                                           TransactionSelectSerializersGet,
                                           closeTransactionSerializers)
 
+from yahoo_fin import stock_info as si
 
 class TransactionsView(generics.ListAPIView):
 
@@ -99,6 +100,9 @@ class closeTransactionsView(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
 
+
+        # Create 
+
         if self.request.auth== None:
 
             return Response({
@@ -110,80 +114,85 @@ class closeTransactionsView(generics.UpdateAPIView):
 
         idTransaction = kwargs['pk']
 
-        trasactionLast = transactions.objects.get(id=idTransaction, owner_id=user.id)
+        transaction_obj = transactions.objects.get(id=idTransaction, owner_id=user.id)
 
-        price_closed = si.get_live_price(trasactionLast.symbol.symbolName)
+        transaction_obj.isClosed = True
+        transaction_obj.save()
 
-        broker = trasactionLast.broker.broker
 
-        if trasactionLast.operation == 'short' and broker == 'paperTrade':
 
-            qty = trasactionLast.base_cost/price_closed
-            current_value = trasactionLast.qty_open * price_closed
-            base_cost = trasactionLast.qty_open * trasactionLast.price_open
-            profit = current_value - base_cost
-            profit_percentage = (current_value  - base_cost)/base_cost
-            profit_percentage = profit_percentage * 100
+        # price_closed = si.get_live_price(trasactionLast.symbol.symbolName)
 
-            is_winner = False
-            if profit > 0:
-                is_winner = True
+        # broker = trasactionLast.broker.broker
 
-        if trasactionLast.operation == 'long' and broker == 'paperTrade':
+        # if trasactionLast.operation == 'short' and broker == 'paperTrade':
 
-            base_cost = trasactionLast.base_cost
-            price_short = trasactionLast.number_stock * price_closed
-            profit = base_cost - price_short
-            current_value = trasactionLast.qty_open * price_closed
+        #     qty = trasactionLast.base_cost/price_closed
+        #     current_value = trasactionLast.qty_open * price_closed
+        #     base_cost = trasactionLast.qty_open * trasactionLast.price_open
+        #     profit = current_value - base_cost
+        #     profit_percentage = (current_value  - base_cost)/base_cost
+        #     profit_percentage = profit_percentage * 100
 
-            profit_percentage = (current_value  - base_cost)/base_cost
-            profit_percentage = profit_percentage * 100
+        #     is_winner = False
+        #     if profit > 0:
+                # is_winner = True
 
-            is_winner = False
-            if profit > 0:
-                is_winner = True
+        # if trasactionLast.operation == 'long' and broker == 'paperTrade':
 
-        if broker == 'alpaca':
+        #     base_cost = trasactionLast.base_cost
+        #     price_short = trasactionLast.number_stock * price_closed
+        #     profit = base_cost - price_short
+        #     current_value = trasactionLast.qty_open * price_closed
+
+        #     profit_percentage = (current_value  - base_cost)/base_cost
+        #     profit_percentage = profit_percentage * 100
+
+        #     is_winner = False
+        #     if profit > 0:
+        #         is_winner = True
+
+        # if broker == 'alpaca':
             
-            broker_close_trade_alpaca({
-                            "order": "sell",
-                            "owner_id": user.id,
-                            "strategyNews_id": trasactionLast.strategyNews.id,
-                            "quantityUSD": trasactionLast.qty_open,
-                            "use":  trasactionLast.operation == 'long',
-                            "stopLoss":  trasactionLast.stop_loss,
-                            "takeProfit": trasactionLast.take_profit,
-                            "consecutiveLosses": consecutiveLosses,
-                            "brokerCapital": brokerCapital,
-                            "symbol": strategyData.symbol.symbolName
-                        },
-                        strategyData,
-                        tradingConfig,
-                        results,
-                        operation='long'
-                        )
+        #     broker_close_trade_alpaca({
+        #                     "order": "sell",
+        #                     "owner_id": user.id,
+        #                     "strategyNews_id": trasactionLast.strategyNews.id,
+        #                     "quantityUSD": trasactionLast.qty_open,
+        #                     "use":  trasactionLast.operation == 'long',
+        #                     "stopLoss":  trasactionLast.stop_loss,
+        #                     "takeProfit": trasactionLast.take_profit,
+        #                     "consecutiveLosses": consecutiveLosses,
+        #                     "brokerCapital": brokerCapital,
+        #                     "symbol": strategyData.symbol.symbolName
+        #                 },
+        #                 strategyData,
+        #                 tradingConfig,
+        #                 results,
+        #                 operation='long'
+        #                 )
         
 
-        transactions.objects.filter(id=idTransaction).update(
-                base_cost=base_cost,
-                profit=profit,
-                profit_percentage=profit_percentage,
-                isClosed=True,
-                price_closed=price_closed,
-                is_winner=is_winner,
-                closeType='manual'
-            )
+        # transactions.objects.filter(id=idTransaction).update(
+        #         base_cost=base_cost,
+        #         profit=profit,
+        #         profit_percentage=profit_percentage,
+        #         isClosed=True,
+        #         price_closed=price_closed,
+        #         is_winner=is_winner,
+        #         closeType='manual'
+        #     )
 
-        return Response({
-            "status": "success",
-            "message": "Transaction closed",
-            "results": {
-                "symbol": trasactionLast.symbol.symbolName,
-                "profit": profit,
-                "profit_percentage": profit_percentage,
-                "is_winner": is_winner,
-            }
-        }, status=status.HTTP_200_OK)
+        # return Response({
+        #     "status": "success",
+        #     "message": "Transaction closed",
+        #     "results": {
+        #         "symbol": trasactionLast.symbol.symbolName,
+        #         "profit": profit,
+        #         "profit_percentage": profit_percentage,
+        #         "is_winner": is_winner,
+        #     }
+        # }, status=status.HTTP_200_OK)
 
 
 

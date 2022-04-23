@@ -135,6 +135,88 @@ class broker():
                 'message': 'The position is open in alpaca',
             })
 
+
+    def short_buy(self):
+
+        if not self.have_transaction_open:
+
+            responseAlpaca = broker_alpaca_lib(self.api,
+                                               symbol=self.symbol, price=self.price).open_short_trade(
+                symbol=self.symbol,
+                qty=self.trading.quantityQTYShort,
+                notional=self.trading.quantityUSDShort,
+                stop_loss_porcent=self.trading.stopLossShort,
+                take_profit_porcent=self.trading.takeProfitShort,
+                price=self.price,
+            )
+
+
+            try:
+                if responseAlpaca.status != 'accepted' and responseAlpaca.status != 'success':
+                    return {
+                        'status': 'error',
+                        'message': 'Not was possible to open the transaction in alpaca'
+                    }
+            except Exception as e:
+                print(e)
+                return {
+                    'status': 'error',
+                    'message': 'Not was possible to open the transaction in alpaca'
+                }
+
+            transactions.objects.create(
+                owner_id=self.trading.owner.id,
+                strategyNews_id=self.strategy.id,
+                broker_id=self.trading.broker.id,
+                symbol_id=self.strategy.symbol.id,
+                trading_config_id=self.trading.id,
+                is_paper_trading=self.trading.is_paper_trading,
+                order=self.options.order,
+                operation=self.operation,
+                isClosed=False,
+                stop_loss=responseAlpaca.data.stop_loss_porcent,
+                stop_loss_qty=responseAlpaca.data.stop_loss,
+                take_profit=responseAlpaca.data.take_profit_porcent,
+                take_profit_qty=responseAlpaca.data.take_profit,
+                base_cost=self.options.quantityUSD,
+                idTransaction=responseAlpaca.response.data.id,
+                # This status is for verify the transaction with scheduler task in alpaca
+                status='accepted_alpaca',
+            )
+
+            self.results[self.operation]['transaction_opened'] = self.results['long']['transaction_opened'] + 1
+            self.results[self.operation]['follower_id_opened'].append(
+                self.trading.owner.id)
+            self.results[self.operation]['symbol'] = self.options.symbol
+            self.results[self.operation]['spread'] = '-1'
+            self.results[self.operation]['response'] = {
+                'status': 'success',
+                'message': 'The transaction was opened in alpaca with success',
+            }
+
+            return self.results
+
+
+        # print("@Note-01 ---- 1701136551 -----")
+        #TODO Create short by
+
+                # broker_sell_short_alpaca({
+                #             "order": "sell",
+                #             "owner_id": follow.id,
+                #             "strategyNews_id": strategyNewsConfig.values()[0]['id'],
+                #             "quantityUSD": quantityUSD,
+                #             "use": use,
+                #             "stopLoss": stopLoss,
+                #             "takeProfit": takeProfit,
+                #             "consecutiveLosses": consecutiveLosses,
+                #             "brokerCapital": brokerCapital,
+                #             "symbol": strategyData.symbol.symbolName_corrected
+                #         },
+                #             strategyData,
+                #             tradingConfig,
+                #             results)
+
+
     def close_position(self):
 
         # Close Alpaca Long Position.

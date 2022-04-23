@@ -318,14 +318,19 @@ test_message_create_user_when_not_user_name_is_supplied = False
 test_create_user_when_not_user_name_is_supplied = False
 test_create_user_when_not_user_email_is_supplied = False
 test_message_create_user_when_not_user_email_is_supplied = False
+
 # apps.trading
 test_create_broker_alpaca = False
 test_trading_config_is_crypto_alpaca_short = False
 
 test_trading_config_alpaca_short_not_fractional = False
 test_short_crypto = False
-test_long_buy_crypto = True
+test_long_buy_crypto = False
 test_calibrate_spread_not_crypto = False
 
-# Test Create strategies and filter it. 
+# Test the trading parameters.
+    # Test for Open Long Order 
+test_trading_open_long = True
+test_trading_open_short = False
+
 

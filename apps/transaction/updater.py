@@ -24,6 +24,7 @@ def update_accepted_broker_transactions():
         print('Exist Transactions Opened')
 
         for transactions_i in transactions_accepted.values():
+
             broker_selected = broker.objects.get(id=transactions_i['broker_id'])
             alpaca = alpaca_configuration.objects.get(broker=broker_selected)
 
@@ -40,14 +41,27 @@ def update_accepted_broker_transactions():
                     amount_open = float(position.filled_avg_price) * float(position.filled_qty)
                     spread = float(transactions_i['base_cost']) - amount_open
 
+
+                    #! Calcular profit
+
+                    profit = amount_open - transactions_i['base_cost'] 
+
+                    profit_percentage = pct_change(
+                        float(transactions_i['base_cost']), float(amount_open))
+
+                        
                     transactions_accepted.filter(id=transactions_i['id']).update(
                         status='closed',
                         qty_open=float(position.filled_qty),
-                        price_open=float(position.filled_avg_price),
+                        qty_close=float(position.filled_qty),
+                        price_closed=float(position.filled_avg_price),
                         amount_open=amount_open,
-                        spread=spread
+                        spread=spread,
+                        profit=profit,
+                        profit_percentage=profit_percentage,
                     )
                         
+                    
 
                     print('---- ---- ----[UPDATED] RUN SCHEDULER accepted_alpaca task')
 

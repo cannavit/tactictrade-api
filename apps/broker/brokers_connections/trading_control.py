@@ -72,7 +72,6 @@ class broker_selector():
                     trading=self.trading_config,
                     results=results,
                     operation='long',
-                    transactionLast=self.transaction_obj
                 ).long_buy()
 
 
@@ -126,25 +125,22 @@ class broker_selector():
                     results=results
                 ).short_buy()
 
+
+            elif broker_name == 'alpaca':
+
+                results = broker_alpaca(
+                    options=self.options,
+                    strategy=self.strategyData,
+                    trading=self.trading_config,
+                    results=results,
+                    operation='long',
+                ).short_buy()
+
             # if broker_name == 'alpaca':
 
                 # TODO The short is pending
 
-                # broker_sell_short_alpaca({
-                #             "order": "sell",
-                #             "owner_id": follow.id,
-                #             "strategyNews_id": strategyNewsConfig.values()[0]['id'],
-                #             "quantityUSD": quantityUSD,
-                #             "use": use,
-                #             "stopLoss": stopLoss,
-                #             "takeProfit": takeProfit,
-                #             "consecutiveLosses": consecutiveLosses,
-                #             "brokerCapital": brokerCapital,
-                #             "symbol": strategyData.symbol.symbolName_corrected
-                #         },
-                #             strategyData,
-                #             tradingConfig,
-                #             results)
+
 
         #!Close Short Trade
         if order == 'buy' and is_active_short == True:

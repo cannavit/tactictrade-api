@@ -75,6 +75,7 @@ class trading_config(models.Model):
         return self.owner.email
 
 
+
 class strategy(models.Model):
 
     strategy = models.CharField(

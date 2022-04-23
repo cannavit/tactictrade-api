@@ -92,33 +92,34 @@ class TransactionSelectSerializers(serializers.ModelSerializer):
             api = tradeapi.REST(alpacaBroker.APIKeyID,
                                 alpacaBroker.SecretKey, alpacaBroker.endpoint)
 
-            data = broker_alpaca_lib(api, type=instance.operation).get_position(
+            data = broker_alpaca_lib(api, type=instance.operation, symbol=instance.symbol.symbolName_corrected).get_position(
                 id=instance.idTransaction)
+            
 
-            if data['status'] == 'canceled':
+            if data.status == 'canceled':
                 # Edit the transaction to closed
                 instance.closeType = 'canceled'
-                instance.last_status = data['status']
+                instance.last_status = data.status
                 instance.isClosed = True
                 instance.save()
 
-            if instance.last_status != data['status']:
-                instance.last_status = data['status']
-                instance.save()
+            # if instance.last_status != data.status:
+            #     instance.last_status = data.status
+            #     instance.save()
 
-            if data['status'] == 'filled':
+            if data.status == 'filled':
 
                 # Get the delta time from now and updated_at
                 deltaTime = timezone.now() - instance.updated_at
                 deltaTime = deltaTime.total_seconds()
-                dataAlpaca = data['data']
-                instance.qty = dataAlpaca['qty']
+                dataAlpaca = data.data
+                instance.qty = dataAlpaca.qty
                 # cost_basis
-                instance.base_cost = dataAlpaca['cost_basis']
+                instance.base_cost = dataAlpaca.cost_basis
                 # profit
-                instance.profit = dataAlpaca['profit_total']
+                instance.profit = dataAlpaca.profit_total
                 # profit_percentage
-                instance.profit_percentage = dataAlpaca['profit_porcent']
+                instance.profit_percentage = dataAlpaca.profit_porcent
 
                 profit_percentage = instance.profit_percentage
                 profit = instance.profit

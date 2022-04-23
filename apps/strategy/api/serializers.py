@@ -147,18 +147,14 @@ class PutSettingSerializers(serializers.HyperlinkedModelSerializer):
         fields = [
             'pk',
             'strategyNews',
-
             'is_public',
             'is_active',
-
             'net_profit',
             'percentage_profitable',
             'max_drawdown',
             'profit_factor',
-
             'period',
             'timer',
-
             'description',
             'post_image',
         ]

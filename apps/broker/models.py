@@ -79,9 +79,11 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 class alpaca_configuration(models.Model):
 
     TRADING_OPTIONS = [
+
         ('https://paper-api.alpaca.markets', 'https://paper-api.alpaca.markets'),
         ('Add URL by Production URL', 'Add URL by Production URL'),
     ]
+
 
     broker = models.ForeignKey(to=broker, on_delete=models.CASCADE)
 

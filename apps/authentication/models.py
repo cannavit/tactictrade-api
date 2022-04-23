@@ -96,8 +96,10 @@ class followers_mantainers(models.Model):
 
     user_id = models.ForeignKey(
         to=User, related_name="mantainer", on_delete=models.CASCADE)
+
     following_user_id = models.ForeignKey(
         to=User, related_name="followers_users", on_delete=models.CASCADE)
+        
     created = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:

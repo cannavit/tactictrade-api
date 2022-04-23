@@ -2,6 +2,7 @@
 from re import A
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.rest import REST, TimeFrame
+from django.forms import ValidationError
 from yahoo_fin import stock_info as si
 import json
 
@@ -72,6 +73,8 @@ class broker_alpaca_lib:
             profit_porcent = (cost_basis - market_value)/market_value
 
         # open_price = current_price  +  current_price * profit_porcent
+        
+        
 
         response = {
             "status": orders.status,
@@ -206,7 +209,7 @@ class broker_alpaca_lib:
                         stop_loss=stop_loss_option
                     )
                 except Exception as e:
-                    print(e)
+                    raise ValidationError("Error in Alpaca Long Buy: " + str(e))
 
         elif take_profit_option is None and stop_loss_option is not None:
 
@@ -341,6 +344,11 @@ class broker_alpaca_lib:
                 limit_price=take_profit,
             )
 
+        if notional == 0.0:
+            notional = None
+        if qty == 0.0:
+            qty = None
+
         response = {}
 
         if take_profit_option is not None and stop_loss_option is not None:
@@ -353,9 +361,9 @@ class broker_alpaca_lib:
                     qty=qty,
                     notional=notional,
                     time_in_force='day',
-                    order_class='bracket',
-                    take_profit=take_profit_option,
-                    stop_loss=stop_loss_option
+                    # order_class='bracket',
+                    # take_profit=take_profit_option, #TODO Check how use take_profit
+                    # stop_loss=stop_loss_option
                 )
 
             except Exception as e:

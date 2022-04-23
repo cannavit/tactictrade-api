@@ -12,4 +12,7 @@ urlpatterns = [
     path('strategy', views.strategy_view.as_view(),
          name='trade_push_with_strategy'),
 
+    path('openlong/<int:pk>', views.tradingOpenLongView.as_view(), name='trading_open_long'),
+    path('openshort/<int:pk>', views.tradingOpenShortView.as_view(), name='trading_open_short'),
+
 ]
