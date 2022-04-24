@@ -1,8 +1,4 @@
-
-Workflow file for this run
-.github/workflows/heroku_ci.yml at b38532f
-# Your workflow name.
-name: Deploy to heroku.
+gitname: Deploy to heroku.
 
 # Run workflow on every push to master branch.
 on:
