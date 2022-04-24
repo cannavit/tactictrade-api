@@ -12,7 +12,6 @@ from apps.strategy.models import strategyNews as strategy_model
 #* instance: is trading_config
 
 
-
 def trading_action(instance, order='sell'):
     
     if order == 'buy' or order == 'sell':

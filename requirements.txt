@@ -35,4 +35,5 @@ bs4
 
 # Backup DB with django-dbbackup
 # django-dbbackup==3.3.0
+django_cryptography==1.1
 

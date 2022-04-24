@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework',
     'rest_framework_swagger',
+    
     'drf_yasg2',
     # 'dbbackup', # Apps for doing the backups
     'gridfs_storage',
@@ -288,6 +289,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = None
 ALPACA_BROKER_TEST_SECRET_KEY = env('ALPACA_BROKER_TEST_SECRET_KEY')
 ALPACA_BROKER_TEST_API_KEY_ID = env('ALPACA_BROKER_TEST_API_KEY_ID')
 
+## ENCRYPT DATA CONFIGURATION 
 
 
 #! BACKUP DATABASE CONFIGURATION
@@ -309,11 +311,13 @@ DBBACKUP_CONNECTORS = {
 # Active or Disabled Test.
 
 # apps.authentication
-test_register_user = False
-test_login_user_not_verified = False
-test_login_user_verified = False
-test_create_user = False
-test_create_super_user = False
+test_register_user = True
+test_login_user_not_verified = True
+test_login_user_verified = True
+test_create_user = True
+test_create_super_user = True
+
+
 test_message_create_user_when_not_user_name_is_supplied = False
 test_create_user_when_not_user_name_is_supplied = False
 test_create_user_when_not_user_email_is_supplied = False
@@ -330,7 +334,7 @@ test_calibrate_spread_not_crypto = False
 
 # Test the trading parameters.
     # Test for Open Long Order 
-test_trading_open_long = True
+test_trading_open_long = False
 test_trading_open_short = False
 
 

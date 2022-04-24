@@ -4,8 +4,7 @@ from django.dispatch import receiver
 
 from apps.authentication.models import User
 from apps.strategy.models import symbolStrategy
-
-
+from django_cryptography.fields import encrypt
 class broker(models.Model):
 
     BROKER_OPTIONS = [
@@ -90,8 +89,13 @@ class alpaca_configuration(models.Model):
     APIKeyID = models.CharField(
         max_length=255, blank=False, null=False, unique=False)
 
+    
     SecretKey = models.CharField(
         max_length=255, blank=False, null=False, unique=False)
+
+    
+    SecretKey = encrypt(models.CharField(max_length=50))
+
 
     endpoint = models.CharField(choices=TRADING_OPTIONS, max_length=255, blank=False,
                                 null=False, unique=False, default='https://paper-api.alpaca.markets')
