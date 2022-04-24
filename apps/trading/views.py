@@ -12,6 +12,7 @@ from apps.trading.models import strategy, trading_config
 from apps.trading.serializers import (strategySerializers,
                                       tradingConfigSerializerPut,
                                       tradingConfigSerializers)
+from apps.trading.utils.trading_accions import trading_action
 
 
 from apps.transaction.models import transactions as transaction_model
@@ -372,100 +373,53 @@ class strategy_view(generics.GenericAPIView):
 
         followers = strategy_obj.follower.all()
 
-        results = {
-            "long":  {
-                "type": "buy",
-                "transaction_opened": 0,
-                "transaction_closed": 0,
-                "follower_id_closed": [],
-                "symbol": "",
-                "follower_id_opened": [],
-                "spread": 0,
-                "qty": 0,
-                "price_open": 0,
-                "trade_type": 'long',
-                "is_winner": False
-            },
-            "short": {
-                "type": "buy",
-                "transaction_opened": 0,
-                "transaction_closed": 0,
-                "symbol": "",
-                "follower_id_closed": [],
-                "follower_id_opened": [],
-                "spread": 0,
-                "qty": 0,
-                "price_open": 0,
-                "trade_type": 'short',
-                "number_stocks": 0,
-                "is_winner": False
+        response_data = {
+                "messages": [],
+                "errors": [],
+                "closed_trades": 0,
+                "errors_trade": 0,
             }
-        }
 
         are_followers = False
+        code_response = 200
         for follow in followers:
-            are_followers = True
             tradingConfig = trading_config.objects.get(
                 owner_id=follow.id, strategyNews_id=strategy_obj.id)
 
             if tradingConfig.is_active == True:
 
-                brokerName = tradingConfig.broker.broker
+                try:
+                    message_success = trading_action(tradingConfig, order=data['order'])
+
+                    response_data['messages'].append(message_success)
+                    response_data['closed_trades'] += 1
+                    
+                except Exception as e:
+                    code_response = 501
+                    response_data['errors_trade'] += 1
+                    response_data["errors"].append(str(e))
 
                 # Transaction open
-                try:
-                    transaction_obj = transaction_model.objects.get(
-                        owner_id=follow.id,
-                        strategyNews_id=strategy_obj.id, 
-                        broker_id=tradingConfig.broker.id,
-                        trading_config=tradingConfig.id,
-                        symbol_id=strategy_obj.symbol.id,
-                        isClosed__in=[False],   
-                    )
-                    transaction_is_open = True
+     
+        if code_response == 200:
 
-                except Exception as e:
-                    transaction_obj = None
-                    transaction_is_open = False
-
-                broker_controller = broker_selector(
-                    trading_config=tradingConfig,
-                    strategyNewsId=strategy_obj.id,
-                    follower_id=follow.id,
-                    strategyData=strategy_obj,
-                    transaction_is_open=transaction_is_open,
-                    transaction_obj=transaction_obj,
-                )
-
-                # Create one Long Trade
-                results = broker_controller.long_trade(
-                    order=data['order'],
-                    broker_name=brokerName,
-                    is_active_long=tradingConfig.is_active_long,
-                    results=results,
-                )
-
-                # Create Short Trade
-                results = broker_controller.short_trade(
-                    order=data['order'],
-                    broker_name=brokerName,
-                    is_active_short=tradingConfig.is_active_short,
-                    results=results,
-                )
-
-
-        if are_followers:
             return Response({
                 "status": "success",
-                "message": "Strategy executed successfully",
-                "data": results,
+                "message": response_data['messages'],
+                "errors": response_data['errors'],
+                "closed_trades": response_data['closed_trades'],
+                "errors_trade": response_data['errors_trade'],
             }, status=status.HTTP_200_OK)
+
         else:
+
             return Response({
                 "status": "warning",
-                "message": "Strategy not have any follower",
-                "data": results,
-            }, status=status.HTTP_204_NO_CONTENT)
+                "message":response_data['messages'],
+                "errors": response_data['errors'],
+                "closed_trades": response_data['closed_trades'],
+                "errors_trade": response_data['errors_trade'],
+            }, status=status.HTTP_501_NOT_IMPLEMENTED)
 
 
 
