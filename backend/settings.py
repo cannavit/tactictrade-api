@@ -16,6 +16,12 @@ import environ
 import django_heroku
 import datetime
 
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+
+
+
+
 # Load the environment variables.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 DJANGO_ENV = os.environ.get('DJANGO_ENV')
@@ -338,3 +344,18 @@ test_trading_open_long = False
 test_trading_open_short = False
 
 
+### MONITORING WIHTH SENTRY. 
+
+sentry_sdk.init(
+    dsn="https://99d5e1e15517491488bd3017af9f4953@o1217629.ingest.sentry.io/6359657",
+    integrations=[DjangoIntegration()],
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)

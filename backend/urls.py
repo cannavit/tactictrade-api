@@ -18,6 +18,7 @@ schema_view = get_schema_view2(
 )
 
 
+
 # ROUTER LIST
 router = routers.DefaultRouter()
 # router.register('user', UserViewSet)
@@ -32,12 +33,14 @@ urlpatterns = [
     path('social_auth/', include('apps.social_auth.urls')),
     path('transactions/', include('apps.transaction.urls')),
 
-    
+
     path('', include(router.urls)),
     path('api_schema/', get_schema_view(title='TacticTrade Apis',
          description='REST API Documentation'), name='api_schema'),
     path('docs/', schema_view.with_ui('swagger',
          cache_timeout=0), name='schema-swagger-ui'),
+
+
 ]
 
 
