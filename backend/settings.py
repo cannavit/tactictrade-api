@@ -359,3 +359,11 @@ sentry_sdk.init(
     # django.contrib.auth) you may enable sending PII data.
     send_default_pii=True
 )
+
+
+
+#! PUSH NOTIFICATIONS ---------------------------------------------------------------------- >>
+
+PUSH_NOTIFICATIONS_FIREBASE_CLOUD_MESSAGE_TOKEN = env('PUSH_NOTIFICATIONS_FIREBASE_CLOUD_MESSAGE_TOKEN')
+
+#! <<
