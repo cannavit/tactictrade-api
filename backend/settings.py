@@ -91,7 +91,7 @@ INSTALLED_APPS = [
 
 # Solve the probelm " CSRF verification failed. "
 CORS_ORIGIN_ALLOW_ALL = True
-
+CSRF_TRUSTED_ORIGINS = ["https://tactictrade-api.herokuapp.com"]
 # SCHEDULER
 WHITENOISE_USE_FINDERS = True
 
