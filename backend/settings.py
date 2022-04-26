@@ -70,7 +70,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework',
     'rest_framework_swagger',
-    
+    'corsheaders',
     'drf_yasg2',
     # 'dbbackup', # Apps for doing the backups
     'gridfs_storage',
@@ -88,6 +88,9 @@ INSTALLED_APPS = [
    
 ]
 
+
+# Solve the probelm " CSRF verification failed. "
+CORS_ORIGIN_ALLOW_ALL = True
 
 # SCHEDULER
 WHITENOISE_USE_FINDERS = True

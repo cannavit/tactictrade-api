@@ -38,3 +38,6 @@ bs4
 django_cryptography==1.1
 
 sentry-sdk
+
+# Solve the error CSRF_TRUSTED_ORIGINS
+django-cors-headers
