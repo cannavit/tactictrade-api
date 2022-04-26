@@ -94,14 +94,16 @@ class strategy(models.Model):
 @receiver(pre_save, sender=trading_config)
 def pre(sender, instance, *args, **kwargs):
 
-    instance.initialCapitalUSDLong = instance.quantityUSDLong
-    instance.initialCapitalUSDShort = instance.quantityUSDShort
-    instance.initialCapitalQTYLong = instance.quantityQTYLong
-    instance.initialCapitalQTYShort = instance.quantityQTYShort
-    instance.winTradeLong = 0
-    instance.winTradeShort = 0
-    instance.closedTradeShort = 0
-    instance.closedTradeLong = 0
-    instance.profitPorcentageShort = 0
-    instance.profitPorcentageLong = 0
+    if instance.id is None:
+        
+        instance.initialCapitalUSDLong = instance.quantityUSDLong
+        instance.initialCapitalUSDShort = instance.quantityUSDShort
+        instance.initialCapitalQTYLong = instance.quantityQTYLong
+        instance.initialCapitalQTYShort = instance.quantityQTYShort
+        instance.winTradeLong = 0
+        instance.winTradeShort = 0
+        instance.closedTradeShort = 0
+        instance.closedTradeLong = 0
+        instance.profitPorcentageShort = 0
+        instance.profitPorcentageLong = 0
 

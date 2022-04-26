@@ -10,6 +10,7 @@ from rest_framework import filters, generics, permissions, status
 from rest_framework.response import Response
 
 from apps.broker.api.serializers import brokerSerializersOriginal, brokerSerializers, alpacaConfigurationSerializers
+from utils.convert_json_to_objects import convertJsonToObject
 
 
 class brokerSerializersView(generics.ListAPIView):
@@ -61,11 +62,13 @@ class alpacaConfigurationSerializersView(generics.CreateAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         userId = request.user.id
-        data = request.data
+
+        data = convertJsonToObject(request.data)
 
         #! Check if exist one broker with the same name:
         exist_broker = broker.objects.filter(
-            owner=userId, brokerName=request.data['brokerName']).count() > 0
+            owner=userId, brokerName=data.brokerName).count() > 0
+
         if exist_broker:
             return Response({
                 "status": "error",
@@ -74,25 +77,28 @@ class alpacaConfigurationSerializersView(generics.CreateAPIView):
 
         #! Check if is one test. Check if exit TEST_KEY
         try:
-            TEST_KEY = data['TEST_KEY']
+
+            TEST_KEY = data.TEST_KEY
+            
             if TEST_KEY == settings.TEST_KEY:
                 TEST_KEY = True
-                data['APIKeyID'] = settings.ALPACA_BROKER_TEST_API_KEY_ID
-                data['SecretKey'] = settings.ALPACA_BROKER_TEST_SECRET_KEY
+                data.APIKeyID = settings.ALPACA_BROKER_TEST_API_KEY_ID
+                data.SecretKey = settings.ALPACA_BROKER_TEST_SECRET_KEY
             else:
                 TEST_KEY = False
-        except KeyError:
+
+        except Exception as e:
             TEST_KEY = False
 
         tagPrice = 'Is a Paper Trading'
 
-        if not data['isPaperTrading']:
+        if not data.isPaperTrading:
             tagPrice = 'Is Real Trading'
 
 
         brokerExist = alpaca_configuration.objects.filter(
-            APIKeyID=data['APIKeyID'],
-            SecretKey=data['SecretKey']).count()
+            APIKeyID=data.APIKeyID,
+            SecretKey=data.SecretKey).count()
 
         if brokerExist > 0:
             return Response({
@@ -101,11 +107,10 @@ class alpacaConfigurationSerializersView(generics.CreateAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         # Create an Alpaca client
-        # if TEST_KEY == False:
-
         try:
             api = tradeapi.REST(
-                data['APIKeyID'], data['SecretKey'], 'https://paper-api.alpaca.markets')
+                data.APIKeyID, data.SecretKey, 'https://paper-api.alpaca.markets')
+
         except Exception as e:
             return Response({
                 "status": "error",
@@ -125,17 +130,17 @@ class alpacaConfigurationSerializersView(generics.CreateAPIView):
         brokerResponse = broker.objects.create(
             owner_id=userId,
             capital=Accountaccount.cash,
-            isPaperTrading=data['isPaperTrading'],
-            broker=data['broker'],
+            isPaperTrading=data.isPaperTrading,
+            broker=data.broker,
             tagBroker='new',
             tagPrice=tagPrice,
-            brokerName=data['brokerName'],
+            brokerName=data.brokerName,
         )
 
         response = alpaca_configuration.objects.create(
             broker_id=brokerResponse.id,
-            APIKeyID=data['APIKeyID'],
-            SecretKey=data['SecretKey'],
+            APIKeyID=data.APIKeyID,
+            SecretKey=data.SecretKey,
             endpoint='https://paper-api.alpaca.markets'
         )
 

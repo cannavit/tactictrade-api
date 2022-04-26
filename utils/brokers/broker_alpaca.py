@@ -309,19 +309,19 @@ class broker_alpaca_lib:
             'data': data
         }
 
-    def open_short_trade(self,
-                         symbol,
+    def short_buy(self,
                          qty=None,
                          notional=None,
                          stop_loss=None,
                          stop_loss_porcent=None,
                          take_profit=None,
                          take_profit_porcent=None,
-                         price=None,
                          ):
 
-        if price is None:
-            price = si.get_live_price(symbol)
+
+
+        price = self.price
+        symbol = self.symbol
 
         stop_loss_option = None
         if stop_loss_porcent is not None:
@@ -381,12 +381,8 @@ class broker_alpaca_lib:
                         stop_loss=stop_loss_option
                     )
                 except Exception as e:
-                    return {
-                        'status': 'error',
-                        'message': str(e),
-                        'emisor': 'broker_alpaca'
-                    }
-
+                    raise ValidationError("Error in Alpaca Short Buy: " + str(e))
+         
         elif take_profit_option is None and stop_loss_option is not None:
 
             response = self.api.submit_order(
@@ -407,6 +403,8 @@ class broker_alpaca_lib:
                 'message': 'Bracket orders require stop_loss or take_profit',
                 'emisor': 'broker_alpaca'
             }
+
+        
 
         else:
 
@@ -429,7 +427,8 @@ class broker_alpaca_lib:
                 'response': response
             }
 
-        return {
+
+        data = convertJsonToObject({
             'status': 'success',
             'message': 'The operation was open in alpaca',
             'emisor': 'broker_alpaca',
@@ -444,8 +443,12 @@ class broker_alpaca_lib:
                 'take_profit_porcent': take_profit_porcent,
                 'type': 'short'
             },
-            'response': response
-        }
+           
+        })
+
+        data.response = response
+
+        return data
 
     # Close all positions in alapca trade.
     def close_all_positions_opened(self):

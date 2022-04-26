@@ -96,73 +96,78 @@ def send_notification(sender, instance, *args, **kwargs):
             send_notification = True   
 
             instance.title = 'TacticTrade [' + instance.strategyName + '] ' + instance.operation + '/' + instance.order 
-            instance.message = 'Trading: ' + instance.order + ' ' + instance.symbol + ',cost: ' + str(instance.base_cost) + '$, asset price ' + str(round(instance.base_price,3)) + '$'
+            instance.message = instance.order + ' ' + instance.symbol + ',cost: ' + str(instance.base_cost) + '$, asset price ' + str(round(instance.base_price,3)) + '$'
             instance.navigate_to = ''
         
-        devices_obj = devices.objects.filter(owner_id=instance.owner_id).values()
-        if devices_obj.count() == 0:
-            send_notification = False
-
-        if send_notification:
-
-            if devices_obj.count() == 1:
-                token = devices_obj[0]['token']
-            else:
-                token = []
-                for device in devices_obj:
-                    token = token.append(device['token'])  
-        
-            body_firebase = {
-                "notification": {
-                    "body": instance.message,
-                    "title": instance.title ,
-                    "image": instance.image,
-                },
-                
-                "priority": "high",
-                "data": {
-                    "type": instance.notification,
-                },
-                 "to": token
-            }
-
-            send_notification_firebase(body_firebase)
+            send_notification_and_build_body(instance, send_notification)
 
         if instance.notification == 'close_long_sell': 
             send_notification = True   
 
             instance.title = 'TacticTrade [' + instance.strategyName + '] ' + instance.operation + '/' + instance.order 
-            instance.message = 'Close Trading: ' + instance.order + ' ' + instance.symbol + ',profit: ' + str(instance.profit) + '$, asset price ' + str(round(instance.base_price,3)) + '$'
+            instance.message = instance.order + ' ' + instance.symbol + ',profit: ' + str(instance.profit) + '$, asset price ' + str(round(instance.base_price,3)) + '$'
             instance.navigate_to = ''
-        
-        devices_obj = devices.objects.filter(owner_id=instance.owner_id).values()
-        if devices_obj.count() == 0:
-            send_notification = False
 
-        if send_notification:
-
-            if devices_obj.count() == 1:
-                token = devices_obj[0]['token']
-            else:
-                token = []
-                for device in devices_obj:
-                    token = token.append(device['token'])  
+            send_notification_and_build_body(instance, send_notification)
         
+
+
+def send_notification_and_build_body(instance,send_notification):
+
+    devices_obj = devices.objects.filter(owner_id=instance.owner_id).values()
+
+    if devices_obj.count() == 0:
+        send_notification = False
+
+    if send_notification:
+
+        if devices_obj.count() == 1:
+    
+            token = devices_obj[0]['token']
+            
+            token_obj = {
+                'to': token,
+            }
+
             body_firebase = {
-                "notification": {
+            "notification": {
+                "body": instance.message,
+                "title": instance.title ,
+                "image": instance.image,
+            },
+
+            "priority": "high",
+            "data": {
+                "type": instance.notification,
+            },
+            **token_obj
+            }
+
+            send_notification_firebase(body_firebase)
+
+        else:
+            token = []
+
+            for device in devices_obj:
+                token_value = device['token']
+                token.append(token_value)  
+                token_obj = {
+                    'to': token_value,
+                }
+                body_firebase = {
+                    "notification": {
                     "body": instance.message,
                     "title": instance.title ,
                     "image": instance.image,
                 },
-                
                 "priority": "high",
                 "data": {
                     "type": instance.notification,
                 },
-                 "to": token
-            }
-
-            send_notification_firebase(body_firebase)
+                **token_obj
+                }
+                
+                send_notification_firebase(body_firebase)
 
 
 def send_notification_firebase(body_firebase):
@@ -178,4 +183,5 @@ def send_notification_firebase(body_firebase):
 
     response = requests.request("POST", url, headers=headers, data=payload)
 
+    print('SEND NOTIFICATION FIREBASE STATUS CODE: ' + str(response.status_code))
     print(response.text)

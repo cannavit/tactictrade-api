@@ -6,7 +6,17 @@ from django.contrib import admin
 
 
 from .models import alpaca_configuration
-admin.site.register(alpaca_configuration)
+
+class alpacaAdmin(admin.ModelAdmin):
+
+    list_display = [
+        'id',
+        'APIKeyID',
+        'endpoint'
+    ]
+
+
+admin.site.register(alpaca_configuration, alpacaAdmin)
 
 
 

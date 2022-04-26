@@ -197,7 +197,6 @@ def pre_save_profit(sender, instance, *args, **kwargs):
                                                                                 """ 
         transaction_last_obj = break_if_exist_open_transaction(instance)
 
-        send_notification = False
 
 
         #! [CLOSE OLD TRANSACTION] --------------------------------------
@@ -231,9 +230,6 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 
                     instance_old.isClosed = True
                     instance_old.save()
-
-    
-
 
 
                 if instance_old.order == 'sell':
@@ -282,9 +278,12 @@ def pre_save_profit(sender, instance, *args, **kwargs):
         #? ---------------------------------------------------------------
         #? ---------------------------------------------------------------
         # Login for paper trading
+       
 
         #? PAPERTRADING ------------------------------------------------------------------------
         if instance.broker.broker == 'paperTrade':
+            instance.price_open = price
+            
 
             # instance.take_profit = instance.trading_config.take_profit
             # instance.stop_loss = instance.trading_config.stop_loss
@@ -325,6 +324,7 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 
         #? ALPACA [BUY] ------------------------------------------------------------------------
         if instance.broker.broker == 'alpaca':
+            instance.price_open = price
             # Init Alpaca configuration for create trade
             api = open_alpaca_connection(instance)
         
@@ -354,17 +354,38 @@ def pre_save_profit(sender, instance, *args, **kwargs):
                 except Exception as e:
                     raise ValidationError(str(e.message))
 
-            elif instance.operation == 'short':
-                print("@Note-01 ---- 1698421975 -----")
+            elif instance.order == 'sell' and instance.trading_config.is_active_short:
+
+                #! Open Long Trade [BUY] with Alpaca
+
+                try:
+
+                    alpaca_transaction_response = broker_alpaca_lib(api,
+                        symbol=instance.symbol.symbolName,
+                        price=price).short_buy(
+                        qty=instance.trading_config.quantityQTYShort,
+                        notional=instance.trading_config.quantityUSDShort,
+                        stop_loss_porcent=instance.trading_config.stopLossShort,
+                        take_profit_porcent=instance.trading_config.takeProfitShort,
+                    )
+
+                    instance.idTransaction = alpaca_transaction_response.data.id
+                    instance.take_profit = alpaca_transaction_response.data.take_profit
+                    instance.stop_loss = alpaca_transaction_response.data.stop_loss
+
+                except Exception as e:
+                    raise ValidationError(str(e.message))
 
 
+
+"""
+     Send notification after to save the transaction data inside to the DB
+"""
 @receiver(post_save, sender=transactions)
 def pre_save_profit(sender, instance, *args, **kwargs):
 
-    print("@Note-01 ---- -1867619864 -----")
     if instance.order == 'buy' and instance.trading_config.is_active_long:
-        
-        #TODO delete this. 
+        instance.operation = 'long'
         notification_model.objects.create(
                 owner_id=instance.owner_id,
                 transact_id=instance.id,
@@ -378,10 +399,11 @@ def pre_save_profit(sender, instance, *args, **kwargs):
                 base_price=instance.price_open,
                 order=instance.order,
                 operation=instance.operation,
+                
             )
 
     if instance.order == 'sell' and instance.trading_config.is_active_short:
-
+        instance.operation = 'short'
         notification_model.objects.create(
                 owner_id=instance.owner_id,
                 transact_id=instance.id,

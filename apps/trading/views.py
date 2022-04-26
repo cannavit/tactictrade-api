@@ -16,6 +16,7 @@ from apps.trading.utils.trading_accions import trading_action
 
 
 from apps.transaction.models import transactions as transaction_model
+from utils.convert_json_to_objects import convertJsonToObject
 # Create your views here.t
 class trading_config_view(generics.ListCreateAPIView):
 
@@ -340,14 +341,11 @@ class strategy_view(generics.GenericAPIView):
 
     def post(self, request):
 
-        data = request.data
-
-        # strategyNewsConfig = strategyNews.objects.filter(
-        #     strategy_token=data['token'])
+        data = convertJsonToObject(request.data)
 
         try:
             strategy_obj = strategyNews.objects.get(
-                strategy_token=data['token'])
+                strategy_token=data.token)
             strategy_exist = True
         except Exception as e:
             strategy_exist = False
@@ -369,8 +367,6 @@ class strategy_view(generics.GenericAPIView):
             }, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         # Get list of Follower for this strategy from ManyToManyField django object
-        
-
         followers = strategy_obj.follower.all()
 
         response_data = {
@@ -382,24 +378,27 @@ class strategy_view(generics.GenericAPIView):
 
         are_followers = False
         code_response = 200
+
         for follow in followers:
-            tradingConfig = trading_config.objects.get(
-                owner_id=follow.id, strategyNews_id=strategy_obj.id)
 
-            if tradingConfig.is_active == True:
+            try:
+                tradingConfig = trading_config.objects.get(
+                    owner_id=follow.id, 
+                    strategyNews_id=strategy_obj.id
+                    )
 
-                try:
-                    message_success = trading_action(tradingConfig, order=data['order'])
-
-                    response_data['messages'].append(message_success)
-                    response_data['closed_trades'] += 1
-                    
-                except Exception as e:
-                    code_response = 501
-                    response_data['errors_trade'] += 1
-                    response_data["errors"].append(str(e))
-
+                if tradingConfig.is_active == True:
+                    try:
+                        message_success = trading_action(tradingConfig, order=data.order)
+                        response_data['messages'].append(message_success)
+                        response_data['closed_trades'] += 1
+                    except Exception as e:
+                        code_response = 501
+                        response_data['errors_trade'] += 1
+                        response_data["errors"].append(str(e))
                 # Transaction open
+            except Exception as e:
+                tradingConfig = None
      
         if code_response == 200:
 
