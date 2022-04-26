@@ -71,6 +71,7 @@ class strategyNews(models.Model):
 
     period = models.CharField(
         choices=STRATEGY_TIME, null=True, blank=True, max_length=60, default='hours')
+        
     timer = models.IntegerField(default=1, null=True, blank=True)
 
     description = models.TextField(max_length=600, null=True, blank=True)

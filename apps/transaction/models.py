@@ -19,6 +19,8 @@ import alpaca_trade_api as tradeapi
 from django.contrib import messages
 
 from utils.convert_json_to_objects import convertJsonToObject
+
+from apps.notification.models import notification as notification_model
 class transactions(models.Model):
 
     ORDER_TYPE = [
@@ -195,6 +197,8 @@ def pre_save_profit(sender, instance, *args, **kwargs):
                                                                                 """ 
         transaction_last_obj = break_if_exist_open_transaction(instance)
 
+        send_notification = False
+
 
         #! [CLOSE OLD TRANSACTION] --------------------------------------
         #! ---------------------------------------------------------------
@@ -212,6 +216,7 @@ def pre_save_profit(sender, instance, *args, **kwargs):
             if instance.broker.broker == 'paperTrade':
                 # Close open trade Long Trade
                 if instance_old.order == 'buy':
+                    send_notification = True
 
                     instance_old.price_closed = price
                     instance_old.qty_close = (instance_old.qty_open * instance_old.price_open)/ instance_old.price_closed
@@ -226,6 +231,10 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 
                     instance_old.isClosed = True
                     instance_old.save()
+
+    
+
+
 
                 if instance_old.order == 'sell':
                     
@@ -295,6 +304,8 @@ def pre_save_profit(sender, instance, *args, **kwargs):
                 instance.qty_open = qty
                 instance.price_open = original_price
 
+
+
             elif instance.order == 'sell' and instance.trading_config.is_active_short:
 
                 spread_procentage = 0.000185
@@ -345,3 +356,44 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 
             elif instance.operation == 'short':
                 print("@Note-01 ---- 1698421975 -----")
+
+
+@receiver(post_save, sender=transactions)
+def pre_save_profit(sender, instance, *args, **kwargs):
+
+    print("@Note-01 ---- -1867619864 -----")
+    if instance.order == 'buy' and instance.trading_config.is_active_long:
+        
+        #TODO delete this. 
+        notification_model.objects.create(
+                owner_id=instance.owner_id,
+                transact_id=instance.id,
+                notification='open_long_buy',
+                is_trade=True,
+                isClosed=False,
+                symbol=instance.symbol.symbolName,
+                image=instance.symbol.url,
+                strategyName=instance.strategyNews.strategyNews,
+                base_cost=instance.base_cost,
+                base_price=instance.price_open,
+                order=instance.order,
+                operation=instance.operation,
+            )
+
+    if instance.order == 'sell' and instance.trading_config.is_active_short:
+
+        notification_model.objects.create(
+                owner_id=instance.owner_id,
+                transact_id=instance.id,
+                notification='close_long_sell',
+                is_trade=True,
+                isClosed=False,
+                symbol=instance.symbol.symbolName,
+                image=instance.symbol.url,
+                strategyName=instance.strategyNews.strategyNews,
+                base_cost=instance.base_cost,
+                base_price=instance.price_open,
+                order=instance.order,
+                operation=instance.operation,
+                profit=instance.profit,
+            )

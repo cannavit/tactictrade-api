@@ -89,6 +89,8 @@ INSTALLED_APPS = [
     'apps.trading',
     'apps.transaction',
     'apps.broker',
+    'apps.notification',
+
    
 ]
 

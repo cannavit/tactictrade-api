@@ -15,12 +15,13 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='setting',
+            name='devices',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('setting', models.CharField(choices=[('theme', 'Theme'), ('generals', 'General')], default='generals', max_length=60)),
-                ('theme', models.CharField(blank=True, choices=[('light', 'Light'), ('dark', 'Dark')], default='light', max_length=60, null=True)),
-                ('language', models.CharField(choices=[('es', 'ES'), ('en', 'EN'), ('fr', 'FR'), ('de', 'DE'), ('it', 'IT'), ('pt', 'PT'), ('ru', 'RU'), ('zh', 'ZH')], default='en', max_length=20)),
+                ('token', models.CharField(default='', max_length=255)),
+                ('device_type', models.CharField(default='', max_length=255)),
+                ('create_at', models.DateTimeField(auto_now_add=True)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
                 ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),

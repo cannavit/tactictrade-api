@@ -32,6 +32,7 @@ urlpatterns = [
     path('broker/', include('apps.broker.api.urls')),
     path('social_auth/', include('apps.social_auth.urls')),
     path('transactions/', include('apps.transaction.urls')),
+    path('notifications/', include('apps.notification.api.urls')),
 
 
     path('', include(router.urls)),
