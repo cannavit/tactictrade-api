@@ -20,8 +20,6 @@ import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
 
-
-
 # Load the environment variables.
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 DJANGO_ENV = os.environ.get('DJANGO_ENV')
@@ -55,11 +53,7 @@ TEST_KEY = env('TEST_KEY')
 
 ALLOWED_HOSTS = [
     '.herokuapp.com',
-    'django-backend-generics.herokuapp.com',
-    'django-backend-steging.herokuapp.com',
-    'tactictrade-api-staging.herokuapp.com',
-    'tactictrade-api-staging.herokuapp.com',
-    'tactictrade-api.herokuapp.com'
+    'tactictrade-api.herokuapp.com',
     '*'
 ]
 
