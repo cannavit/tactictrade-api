@@ -27,7 +27,6 @@ class setting(models.Model):
     ]    
 
     owner = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    setting     = models.CharField(choices=CATEGORY_SETTINGS,default='generals',max_length=60,unique=False)
     theme  = models.CharField(choices=CATEGORY_THEMES,default='light',null=True,blank=True,max_length=60)
     language    = models.CharField(choices=LANGUAGE_SETTINGS,default='en',blank=False,max_length=20)
 
@@ -36,4 +35,4 @@ class setting(models.Model):
 
 
     def __str__(self):
-        return self.setting
+        return self.owner.email

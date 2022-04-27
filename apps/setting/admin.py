@@ -3,8 +3,17 @@ from .models import setting
 admin.site.site_header = 'TacticTrade-Api'
 
 class settingAdmin(admin.ModelAdmin):
-    # list_display = ['setting','theme', 'language']
+
+    list_display = [
+            'owner',
+            'theme',
+            'language',
+            'notifications_push_long',
+            'notifications_push_short',
+        ]
+        
     pass
+
 
 admin.site.register(setting,settingAdmin)
 
