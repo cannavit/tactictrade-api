@@ -1,7 +1,7 @@
 import alpaca_trade_api as tradeapi
 from apps.authentication.models import User
 from apps.broker.models import alpaca_configuration, broker
-from apps.broker.utils.init_broker import InitData
+from apps.broker.utils.init_data import InitData
 
 # import settings in django
 from django.conf import settings

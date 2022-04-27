@@ -4,7 +4,7 @@ import secrets
 
 from apps.authentication.models import User
 from apps.broker.models import broker as broker_model
-from apps.broker.utils.init_broker import InitData
+from apps.broker.utils.init_data import InitData
 from apps.strategy.api.serializers import (CreateSettingSerializers,
                                            OwnerStrategySerializers,
                                            PutSettingSerializers,

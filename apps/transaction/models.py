@@ -385,7 +385,9 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 def pre_save_profit(sender, instance, *args, **kwargs):
 
     if instance.order == 'buy' and instance.trading_config.is_active_long:
+        
         instance.operation = 'long'
+
         notification_model.objects.create(
                 owner_id=instance.owner_id,
                 transact_id=instance.id,

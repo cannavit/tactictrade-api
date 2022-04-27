@@ -8,12 +8,7 @@ from ..models    import setting
 
 class settingSerializers(serializers.ModelSerializer):
     class Meta:
-        model  = setting
-        fields = [
-            'id',
-            'setting',
-            'theme',
-            'language'
-        ]
 
+        model  = setting
+        fields = '__all__'
 

@@ -4,7 +4,7 @@ import string
 from apps.authentication.api.serializers import RegisterSerializer
 from apps.authentication.models import User
 from apps.broker.models import broker
-from apps.broker.utils.init_broker import InitData
+from apps.broker.utils.init_data import InitData
 from apps.strategy.models import strategyNews
 from apps.trading.models import trading_config
 

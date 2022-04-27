@@ -7,7 +7,7 @@ import jwt
 import requests
 from apps.authentication.models import User, followers_mantainers
 from apps.authentication.utils import Util
-from apps.broker.utils.init_broker import InitData
+from apps.broker.utils.init_data import InitData
 
 from asgiref.sync import sync_to_async
 # Import settings
@@ -99,8 +99,11 @@ class RegisterViewSet(generics.GenericAPIView):
             # Async send email service
             sync_to_async(Util.send_email(data))
 
+
             #! Initial user data
             InitData.init_broker(user.id)
+            InitData.init_settings(user.id)
+            
             return Response(user_data, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

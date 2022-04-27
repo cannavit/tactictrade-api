@@ -1,5 +1,5 @@
 from apps.broker.api.serializers import brokerSerializers as serializer
-
+from apps.setting.api.serializers import settingSerializers as setting_serializer
 class InitData:
 
     def init_broker(userId):
@@ -24,3 +24,24 @@ class InitData:
             return data
         else:
             return ""
+
+    def init_settings(userId):
+
+        data = {
+            'owner': userId,
+            'theme': 'light',
+            'language': 'en',
+            'notifications_push_short': True,
+            'notifications_push_long': True,
+        }
+
+        serializer_data = setting_serializer(data=data)
+
+        if serializer_data.is_valid(raise_exception=True):
+            
+            serializer_data.save()
+
+        
+
+
+
