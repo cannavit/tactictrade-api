@@ -388,11 +388,9 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 
     if instance.order == 'buy' and instance.trading_config.is_active_long:
 
-        setting_active = setting_model.objects.get(owner_id=instance.owner.id,setting='Receive Long Notifications Push')
-
-        print(setting_active)
-        
         instance.operation = 'long'
+
+        setting_active = setting_model.objects.get(owner_id=instance.owner.id,setting='Receive Long Notifications Push')
 
         if setting_active.bool_value:
 
