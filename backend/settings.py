@@ -52,7 +52,7 @@ MASTER_KEY = env('MASTER_KEY')
 TEST_KEY = env('TEST_KEY')
 
 ALLOWED_HOSTS = [
-    '.herokuapp.com',
+    'https://tactictrade-api.herokuapp.com',
     '*'
 ]
 # Application definition
