@@ -53,11 +53,8 @@ TEST_KEY = env('TEST_KEY')
 
 ALLOWED_HOSTS = [
     '.herokuapp.com',
-    '127.0.0.1:8000'
-    # 'tactictrade-api.herokuapp.com',
-    # '*'
+    '*'
 ]
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -161,11 +158,7 @@ MIDDLEWARE = [
      'corsheaders.middleware.CorsMiddleware',
 ]
 
-# Solve the probelm " CSRF verification failed. "
-CORS_ORIGIN_ALLOW_ALL = True
-CSRF_TRUSTED_ORIGINS = ["https://tactictrade-api.herokuapp.com"]
 ROOT_URLCONF = 'backend.urls'
-
 
 
 TEMPLATES = [
@@ -187,7 +180,7 @@ TEMPLATES = [
 ]
 
 
-CSRF_COOKIE_DOMAIN = ['herokuapp.com']
+# CSRF_COOKIE_DOMAIN = ['herokuapp.com']
 WSGI_APPLICATION = 'backend.wsgi.application'
 DB_NAME = env('DB_NAME')
 
@@ -260,9 +253,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = str(BASE_DIR.joinpath('staticfiles'))
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'uploads/images')
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
-CSRF_COOKIE_HTTPONLY = True
 
 # Extra lookup directories for collectstatic to find static files
 
