@@ -15,6 +15,7 @@ class InitData:
             'tagPrice': 'Paper Trading',
             'is_active': True,
             'block_is_active': True,
+            
         }
 
         serializerData = serializer(data=data)
@@ -26,22 +27,55 @@ class InitData:
             return ""
 
     def init_settings(userId):
+        
+        # notifications_push_short
 
         data = {
-            'owner': userId,
-            'theme': 'light',
-            'language': 'en',
-            'notifications_push_short': True,
-            'notifications_push_long': True,
+            'owner':  userId,
+            'setting': 'notifications_push_short',
+            'is_active': True,
+            'bool_value': True,
+            'string_value': '',
+            'is_switch_on': True,
+            'icon': '0xf234',
+            'family': 'notifications',
         }
 
         serializer_data = setting_serializer(data=data)
 
-        if serializer_data.is_valid(raise_exception=True):
-            
+        if serializer_data.is_valid(raise_exception=True):    
             serializer_data.save()
 
+        # notifications_push_long
+        data = {
+            'owner':  userId,
+            'setting': 'notifications_push_long',
+            'is_active': True,
+            'bool_value': True,
+            'string_value': '',
+            'is_switch_on': True,
+            'icon': '0xf234',
+            'family': 'notifications',
+
+        }
+
+        serializer_data = setting_serializer(data=data)
+
+        if serializer_data.is_valid(raise_exception=True):    
+            serializer_data.save()        
         
+        # en
+        data = {
+            'owner':  userId,
+            'setting': 'language',
+            'is_active': True,
+            'bool_value': False,
+            'string_value': 'en',
+            'is_switch_on': False,
+        }
 
+        serializer_data = setting_serializer(data=data)
 
+        if serializer_data.is_valid(raise_exception=True):    
+            serializer_data.save()     
 

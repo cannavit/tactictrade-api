@@ -30,7 +30,6 @@ class brokerAdmin(admin.ModelAdmin):
         'capital',
         'isPaperTrading',
         'broker',
-        
     ]
 
 admin.site.register(broker, brokerAdmin)

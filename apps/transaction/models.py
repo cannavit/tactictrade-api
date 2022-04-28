@@ -12,6 +12,8 @@ from apps.authentication.models import User
 from apps.broker.models import broker, alpaca_configuration
 from apps.strategy.models import strategyNews, symbolStrategy
 from apps.trading.models import trading_config
+from apps.setting.models import setting as setting_model
+
 from django.core.exceptions import ValidationError
 
 import alpaca_trade_api as tradeapi
@@ -385,10 +387,16 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 def pre_save_profit(sender, instance, *args, **kwargs):
 
     if instance.order == 'buy' and instance.trading_config.is_active_long:
+
+        setting_active = setting_model.objects.get(owner_id=instance.owner.id,setting='Receive Long Notifications Push')
+
+        print(setting_active)
         
         instance.operation = 'long'
 
-        notification_model.objects.create(
+        if setting_active.bool_value:
+
+            notification_model.objects.create(
                 owner_id=instance.owner_id,
                 transact_id=instance.id,
                 notification='open_long_buy',
@@ -405,8 +413,14 @@ def pre_save_profit(sender, instance, *args, **kwargs):
             )
 
     if instance.order == 'sell' and instance.trading_config.is_active_short:
+
         instance.operation = 'short'
-        notification_model.objects.create(
+
+        setting_active_short = setting_model.objects.get(owner_id=instance.owner.id,setting='Receive Short Notifications Push')
+
+        if setting_active_short.bool_value:
+
+            notification_model.objects.create(
                 owner_id=instance.owner_id,
                 transact_id=instance.id,
                 notification='close_long_sell',

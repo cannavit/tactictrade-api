@@ -5,13 +5,16 @@ admin.site.site_header = 'TacticTrade-Api'
 class settingAdmin(admin.ModelAdmin):
 
     list_display = [
+            'id',
             'owner',
-            'theme',
-            'language',
-            'notifications_push_long',
-            'notifications_push_short',
+            'setting',
+            'family',
+            'is_active',
+            'bool_value',
+            'string_value',
+            'is_switch_on',
         ]
-        
+
     pass
 
 

@@ -5,33 +5,37 @@ from apps.strategy.models import strategyNews
 
 class setting(models.Model):
 
-    CATEGORY_THEMES = [
-        ('light', 'Light'),
-        ('dark', 'Dark'),
-    ]
-
     CATEGORY_SETTINGS = [
-        ('theme', 'Theme'),
-        ('generals', 'General'),
+        ('Receive Long Notifications Push', 'notifications_push_long'),
+        ('Receive Short Notifications Push', 'notifications_push_short'),
+        ('language', 'Language'),
+        ('TestOption', 'Test Option'),        
+
     ]
 
-    LANGUAGE_SETTINGS = [
-        ('es', 'ES'),
-        ('en', 'EN'),
-        ('fr', 'FR'),
-        ('de', 'DE'),
-        ('it', 'IT'),
-        ('pt', 'PT'),
-        ('ru', 'RU'),
-        ('zh', 'ZH'),
-    ]    
+    FAMILY_SETTINGS = [
+        ('Notifications', 'notifications'),
+        ('Test', 'test'),
+
+    ]
+    
 
     owner = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    theme  = models.CharField(choices=CATEGORY_THEMES,default='light',null=True,blank=True,max_length=60)
-    language    = models.CharField(choices=LANGUAGE_SETTINGS,default='en',blank=False,max_length=20)
+    setting  = models.CharField(choices=CATEGORY_SETTINGS,null=False,blank=False,max_length=100, unique=True)
+    family = models.CharField(choices=FAMILY_SETTINGS,null=False,blank=False,max_length=100)
 
-    notifications_push_long = models.BooleanField(default=True)
-    notifications_push_short = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+
+    bool_value = models.BooleanField(default=True)
+    string_value = models.CharField(max_length=100, null=True, blank=True)
+
+    # https://api.flutter.dev/flutter/material/Icons-class.html
+    icon = models.CharField(max_length=30, null=True, blank=True, default='0xf03c3')
+
+    is_switch_on = models.BooleanField(default=True)
+
+    create_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
     def __str__(self):

@@ -53,8 +53,9 @@ TEST_KEY = env('TEST_KEY')
 
 ALLOWED_HOSTS = [
     '.herokuapp.com',
-    'tactictrade-api.herokuapp.com',
-    '*'
+    '127.0.0.1:8000'
+    # 'tactictrade-api.herokuapp.com',
+    # '*'
 ]
 
 # Application definition
@@ -99,13 +100,12 @@ WHITENOISE_USE_FINDERS = True
 REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'error',
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    # 'DEFAULT_PERMISSION_CLASSES': ( 'rest_framework.permissions.IsAuthenticated', ), #!TODO Active this por production
+    'DEFAULT_PERMISSION_CLASSES': ( 'rest_framework.permissions.IsAuthenticated', ), #!TODO Active this por production
     'PAGE_SIZE': 10,
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
     'TEST_REQUEST_DEFAULT_FORMAT': 'json',
 
     'TEST_REQUEST_RENDERER_CLASSES': [
@@ -113,6 +113,9 @@ REST_FRAMEWORK = {
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.TemplateHTMLRenderer'
     ],
+
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+
 
 }
 
