@@ -55,6 +55,12 @@ ALLOWED_HOSTS = [
     'https://tactictrade-api.herokuapp.com',
     '*'
 ]
+
+CORS_ORIGIN_WHITELIST = (
+  'https://tactictrade-api.herokuapp.com',
+)
+
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -365,3 +371,7 @@ sentry_sdk.init(
 PUSH_NOTIFICATIONS_FIREBASE_CLOUD_MESSAGE_TOKEN = env('PUSH_NOTIFICATIONS_FIREBASE_CLOUD_MESSAGE_TOKEN')
 
 #! <<
+
+
+#! CHARACTERISTICS/FUNCTIONALITIES ---------------------------------------------------------------------- >>
+APP_PROFILE_OPTIONS_LIST=True
