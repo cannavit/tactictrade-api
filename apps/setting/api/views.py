@@ -1,8 +1,8 @@
 from urllib import response
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, RetrieveUpdateAPIView, ListAPIView, UpdateAPIView
-from ..models import setting
-from .serializers   import settingSerializers
+from ..models import setting, feature_flag
+from .serializers   import settingSerializers, featureFlagsSerializers
 from .permissions import IsOwner
 from rest_framework import filters, generics, permissions, status
 
@@ -30,14 +30,21 @@ class SettingListAPIview(RetrieveUpdateAPIView):
 
         return self.queryset.filter(owner_id=self.request.user.id, id=pk)
 
+
+class FeatureFlagListAPIview(ListAPIView):
+
+    serializer_class = featureFlagsSerializers
+    queryset = feature_flag.objects.all()
+    permissions_class = (permissions.IsAuthenticated,) 
+
+
+
 class SettingListAPI_View(ListAPIView):
 
     queryset = setting.objects.all()
     serializer_class = settingSerializers
     permissions_class= (permissions.IsAuthenticated, IsOwner,) 
     
-    # filter_backends = [filters.SearchFilter]
-
 
     filter_backends = [DjangoFilterBackend]
     my_filter_fields = ['is_active', 'is_switch_on']
@@ -66,14 +73,3 @@ class SettingListAPI_View(ListAPIView):
         if filtering_kwargs:
             queryset = setting.objects.filter(**filtering_kwargs) # filter the queryset based on 'filtering_kwargs'
         return queryset
-
-    # def get_queryset(self):
-
-    #     if self.request.auth== None:
-
-    #         return Response({
-    #             "status": "error",
-    #             "message": "Authentication required or invalid token"
-    #         }, status=status.HTTP_400_BAD_REQUEST)
-
-        # return self.queryset.filter(owner_id=self.request.user.id)

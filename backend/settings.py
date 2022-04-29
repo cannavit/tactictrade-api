@@ -144,6 +144,9 @@ JWT_AUTH = {
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
+        # 'basic': {
+        #     'type': 'basic'
+        # }
         'Bearer': {
             'type': 'apiKey',
             'name': 'Authorization',
@@ -152,6 +155,9 @@ SWAGGER_SETTINGS = {
     }
 }
 
+REDOC_SETTINGS = {
+   'LAZY_RENDERING': False,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -370,10 +376,37 @@ sentry_sdk.init(
 
 #! PUSH NOTIFICATIONS ---------------------------------------------------------------------- >>
 
+
 PUSH_NOTIFICATIONS_FIREBASE_CLOUD_MESSAGE_TOKEN = env('PUSH_NOTIFICATIONS_FIREBASE_CLOUD_MESSAGE_TOKEN')
 
 #! <<
 
 
-#! CHARACTERISTICS/FUNCTIONALITIES ---------------------------------------------------------------------- >>
-APP_PROFILE_OPTIONS_LIST=True
+#! FEATURE_FLAGS ---------------------------------------------------------------------- >>
+
+
+
+"""
+    A feature flag is a software development process used to enable or disable functionality 
+    remotely without deploying code. New features can be deployed without making them visible to users. 
+    Feature flags help decouple deployment from release letting you manage the full lifecycle of a feature.
+"""
+
+FEATURE_FLAGS = [
+    {
+        'feature': 'navbar_with_logo_open_options_panel',
+        'description': 'Show the options panel when the logo is clicked.',
+        'family': 'notification',
+        'localization': 'navbar',
+        'family_id': 'navbar_notification',
+        'flag_open': True,
+        'version': '1.0.0',
+        'version_app': '1.0.52',
+        'is_production': True,
+        'is_staging': True,
+        'is_development': True,
+    }
+]
+
+
+

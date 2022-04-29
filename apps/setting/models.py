@@ -41,24 +41,15 @@ class setting(models.Model):
         return self.owner.email
 
 
-# class functionalities(models.Model):
+class feature_flag(models.Model):
     
-#     functionality  = models.CharField(choices=CATEGORY_FUNCTIONALITIES,null=False,blank=False,max_length=100, unique=True)
-#     family = models.CharField(choices=FAMILY_FUNCTIONALITIES,null=False,blank=False,max_length=100)
-
-#     is_active = models.BooleanField(default=True)
-
-#     bool_value = models.BooleanField(default=True)
-#     string_value = models.CharField(max_length=100, null=True, blank=True)
-
-#     # https://api.flutter.dev/flutter/material/Icons-class.html
-#     icon = models.CharField(max_length=30, null=True, blank=True, default='0xf03c3')
-
-#     is_switch_on = models.BooleanField(default=True)
-
-#     create_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-
-
-#     def __str__(self):
-#         return self.owner.email
+      feature = models.CharField(max_length=100, null=True, blank=True)
+      description = models.CharField(max_length=100, null=True, blank=True)
+      family = models.CharField(max_length=100, null=True, blank=True)
+      localization = models.CharField(max_length=100, null=True, blank=True)
+      family_id = models.CharField(max_length=100, null=True, blank=True)
+      
+      flag_open = models.BooleanField(default=True)
+      version = models.CharField(max_length=100, null=True, blank=True)
+      version_app = models.CharField(max_length=100, null=True, blank=True)
+    
