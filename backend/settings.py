@@ -52,13 +52,15 @@ MASTER_KEY = env('MASTER_KEY')
 TEST_KEY = env('TEST_KEY')
 
 ALLOWED_HOSTS = [
-    'https://tactictrade-api.herokuapp.com',
+    '.herokuapp.com',
     '*'
 ]
 
 CORS_ORIGIN_WHITELIST = (
   'https://tactictrade-api.herokuapp.com',
 )
+
+CSRF_TRUSTED_ORIGINS = ['https://tactictrade-api.herokuapp.com']
 
 
 # Application definition
