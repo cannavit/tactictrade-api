@@ -318,16 +318,27 @@ class trading_config_get_all_view(generics.ListAPIView):
 
         # Get the parameter of the request
         category = self.request.query_params.get('category', None)
-        if category == 'active':
-            results = trading_config.objects.filter(owner_id=user.id, is_active_short__in=[True], is_active_long__in=[True])
-        elif category == 'inactive':
-            results = trading_config.objects.filter(owner_id=user.id, is_active_short__in=[False], is_active_long__in=[False])
-        elif category == 'winners':
-            results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__gte=0, profitPorcentageLong__gte=0)
-        elif category == 'losses':
-            results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__lte=0, profitPorcentageLong__lte=0)
-        else:
-            results = trading_config.objects.filter(owner_id=user.id)
+
+        try:
+            if category == 'active':
+                results = trading_config.objects.filter(owner_id=user.id, is_active_short__in=[True], is_active_long__in=[True])
+            elif category == 'inactive':
+                results = trading_config.objects.filter(owner_id=user.id, is_active_short__in=[False], is_active_long__in=[False])
+            elif category == 'winners':
+                results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__gte=0, profitPorcentageLong__gte=0)
+            elif category == 'losses':
+                results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__lte=0, profitPorcentageLong__lte=0)
+            else:
+                results = trading_config.objects.filter(owner_id=user.id)
+
+        except Exception as e:
+            results = None
+            return Response({
+                "status": "error",
+                "message": "Trading Parameter not found",
+                "error": e
+            }, status=status.HTTP_204_NO_CONTENT)
+        
 
 
         return results

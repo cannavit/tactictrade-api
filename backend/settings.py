@@ -78,7 +78,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'corsheaders',
     'drf_yasg2',
-    # 'dbbackup', # Apps for doing the backups
+    'channels',
     'gridfs_storage',
     'django_filters',
     'drf_multiple_model',
@@ -90,7 +90,7 @@ INSTALLED_APPS = [
     'apps.transaction',
     'apps.broker',
     'apps.notification',
-
+    'apps.asset',
    
 ]
 
@@ -375,12 +375,33 @@ sentry_sdk.init(
 
 
 #! PUSH NOTIFICATIONS ---------------------------------------------------------------------- >>
-
-
 PUSH_NOTIFICATIONS_FIREBASE_CLOUD_MESSAGE_TOKEN = env('PUSH_NOTIFICATIONS_FIREBASE_CLOUD_MESSAGE_TOKEN')
 
-#! <<
+#! CHANNELS CONFIGURATION
 
+ASGI_APPLICATION = "backend.asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [env('REDIS_URL') ],
+            #  "hosts": [("redis://:eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81@127.0.0.1:6379/0")],
+        },
+       
+    },
+}
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+#         'LOCATION': [env('REDIS_URL')],
+#         'OPTIONS': {
+#             'MAX_ENTRIES': 100,
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#         }
+#     }
+# }
 
 #! FEATURE_FLAGS ---------------------------------------------------------------------- >>
 

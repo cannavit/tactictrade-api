@@ -55,8 +55,8 @@ class TransactionRecordsView(generics.ListAPIView):
                 "message": "Authentication required or invalid token"
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # user = self.request.user
         strategy_id = self.kwargs['pk']
+        private = self.kwargs.get('private', None)
 
         strategy = strategyNews.objects.filter(id=strategy_id)
 
@@ -66,17 +66,12 @@ class TransactionRecordsView(generics.ListAPIView):
                 "message": "Strategy not found"
             }, status=status.HTTP_400_BAD_REQUEST)
 
-
-        # body = self.request.data
-        # Disabled 
-        # if body['private'] == True: #TODO check this part
-        if False == True:
+        if private == 'true':
             user_id = self.request.user.id
         else:
             strategy_value = strategy.values()[0]
             email_bot = strategy_value['email_bot']
             user_bot = User.objects.get(email=email_bot)
-
             user_id = user_bot.id
 
         results = transactions.objects.filter(owner_id=user_id, strategyNews_id=strategy_id,isClosed__in=[True]).order_by('-id')
