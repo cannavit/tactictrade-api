@@ -14,6 +14,8 @@ from apps.transaction.serializers import (TransactionSelectSerializers,
                                           TransactionSelectSerializersGet,
                                           closeTransactionSerializers)
 
+from apps.trading.models import trading_config
+
 from yahoo_fin import stock_info as si
 
 class TransactionsView(generics.ListAPIView):
@@ -61,10 +63,12 @@ class TransactionRecordsView(generics.ListAPIView):
         strategy = strategyNews.objects.filter(id=strategy_id)
 
         if strategy.count() == 0:
-                return Response({
+
+            return Response({
                 "status": "error",
                 "message": "Strategy not found"
             }, status=status.HTTP_400_BAD_REQUEST)
+
 
         if private == 'true':
             user_id = self.request.user.id
@@ -76,8 +80,6 @@ class TransactionRecordsView(generics.ListAPIView):
 
         results = transactions.objects.filter(owner_id=user_id, strategyNews_id=strategy_id,isClosed__in=[True]).order_by('-id')
         
-        # results = transactions.objects.get(owner_id=user_id, strategyNews_id=strategy_id,isClosed__in=[True])
-
 
         return results
 

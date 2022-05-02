@@ -327,9 +327,16 @@ class trading_config_get_all_view(generics.ListAPIView):
             elif category == 'winners':
                 results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__gte=0, profitPorcentageLong__gte=0)
             elif category == 'losses':
+
                 results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__lte=0, profitPorcentageLong__lte=0)
+
             else:
-                results = trading_config.objects.filter(owner_id=user.id)
+                try:
+                    results = trading_config.objects.filter(owner_id=user.id)
+                except Exception as e:
+                    print(e)
+                    results = None
+
 
         except Exception as e:
             results = None
@@ -341,6 +348,7 @@ class trading_config_get_all_view(generics.ListAPIView):
         
 
 
+        print(results)
         return results
 
 

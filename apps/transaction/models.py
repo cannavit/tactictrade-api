@@ -291,6 +291,7 @@ def pre_save_profit(sender, instance, *args, **kwargs):
             # instance.stop_loss = instance.trading_config.stop_loss
 
             if instance.order == 'buy' and instance.trading_config.is_active_long:
+                instance.operation = 'long'
 
                 spread_procentage = 0.000185
                 spread = price * spread_procentage
@@ -308,6 +309,7 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 
 
             elif instance.order == 'sell' and instance.trading_config.is_active_short:
+                instance.operation = 'short'
 
                 spread_procentage = 0.000185
                 spread = price * spread_procentage
@@ -331,6 +333,9 @@ def pre_save_profit(sender, instance, *args, **kwargs):
             api = open_alpaca_connection(instance)
         
             if instance.order == 'buy' and instance.trading_config.is_active_long:
+
+                instance.operation = 'long'
+                
                 instance.base_cost = instance.trading_config.initialCapitalUSDLong
 
                 #? Close Short old operations. 
@@ -357,7 +362,8 @@ def pre_save_profit(sender, instance, *args, **kwargs):
                     raise ValidationError(str(e.message))
 
             elif instance.order == 'sell' and instance.trading_config.is_active_short:
-
+                
+                instance.operation = 'short'
                 #! Open Long Trade [BUY] with Alpaca
 
                 try:
