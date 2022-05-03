@@ -10,7 +10,7 @@ class transactionsAdmin(admin.ModelAdmin):
      'qty_close','amount_close', 'price_closed', 'close_cost', 
      'profit', 'profit_percentage','stop_loss', 'take_profit', 'status')
     
-    # list_filter = ( 'strategyNews', 'broker', 'symbol', 'is_paper_trading', 'order', 'operation',    'isClosed',  'is_winner')
+    list_filter = (  'order', 'operation',    'isClosed',  'is_winner')
     # search_fields = ('strategyNews', 'broker', 'symbol', 'is_paper_trading', 'order', 'operation',   'isClosed',  'is_winner')
 
 admin.site.register(transactions,transactionsAdmin)

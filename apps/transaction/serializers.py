@@ -34,7 +34,7 @@ class TransactionSelectSerializersGet(serializers.ModelSerializer):
         response['amount_open'] = round(response['amount_open'], 1)
         response['amount_close'] = round(response['amount_close'], 1)
         response['spread'] = round(response['spread'], 4)
-        response['profit'] = round(response['profit'], 2)
+        response['profit'] = round(response['profit'], 6)
         response['profit_percentage'] = round(response['profit_percentage'], 3)
         response['create_at'] = response['create_at'][0:19]
         response['updated_at'] = response['updated_at'][0:19]
