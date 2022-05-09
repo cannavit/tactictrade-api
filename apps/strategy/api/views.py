@@ -40,12 +40,6 @@ class SettingsAPIview(generics.ListAPIView):
     def get_queryset(self): 
         #TODO this control not work with swagger view.  (Fix it)
 
-        # if self.request.auth == None:
-        #     return Response({
-        #         "status": "error",
-        #         "message": "Authentication required or invalid token"
-        #     }, status=status.HTTP_400_BAD_REQUEST)
-
         user = self.request.user
         self.user_id = user.id
 

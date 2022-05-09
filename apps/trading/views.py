@@ -18,6 +18,388 @@ from apps.trading.utils.trading_accions import trading_action
 from apps.transaction.models import transactions as transaction_model
 from utils.convert_json_to_objects import convertJsonToObject
 # Create your views here.t
+
+class trading_config_flutter_view(generics.ListCreateAPIView):
+
+    serializer_class = tradingConfigSerializers
+    queryset = trading_config.objects.all()
+    permissions_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request):
+
+        if request.auth == None:
+            return Response({
+                "status": "error",
+                "message": "Authentication request or invalid token",
+            }, status=status.HTTP_400_BAD_REQUEST)     
+
+        return Response({
+            "status": "success",
+            "message": "Trading configs for view",
+            "paperTrade": {
+                "long": [
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+
+                        "db_field_one": "quantityUSDLong",
+                        "db_field_two": "quantityQTYLong",
+
+                        "button_one_text": "QTY",
+                        "button_two_text": "USD",
+
+                        "labelText_one":  "Amount to invest [USD]",
+                        "labelText_two":  "Amount to invest [QTY]",
+
+                        "hintText_one":  "Example: 100 USD",
+                        "hintText_two":  "Example: 100 unit",
+
+                        "is_mandatory": True,
+                        "is_double": True,
+                        "is_int": False,
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+                        "db_field_one": "stopLossLong",
+                        "db_field_two": "stopLossLongUsd",
+
+                        "button_one_text": "%",
+                        "button_two_text": "UNIT",
+
+                        "labelText_one":  "Stop Loss [%]",
+                        "labelText_two":  "Stop Loss [UNIT]",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "Example: 171.2Unit",
+
+                        "is_mandatory": False,
+                        "is_double": True,
+                        "is_int": False,
+
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+                        "db_field_one": "takeProfitLong",
+                        "db_field_two": "takeProfitLongUsd",
+
+                        "button_one_text": "%",
+                        "button_two_text": "UNIT",
+
+                        "labelText_one":  "Take Profit [%]",
+                        "labelText_two":  "Take Profit [UNIT]",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "Example: 171.2Unit",
+
+                        "is_mandatory": False,
+                        "is_double": True,
+                        "is_int": False,
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+
+                        "db_field_one": "consecutiveLossesLong",
+                        "db_field_two": "",
+
+                        "button_one_text": "numbers",
+                        "button_two_text": "",
+
+                        "labelText_one":  "Take Consecutive Losses Allowed",
+                        "labelText_two":  "",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "",
+
+                        "is_mandatory": False,
+                        "is_double": False,
+                        "is_int": True,
+
+                    },
+
+
+                ],
+                "short": [
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+
+                        "db_field_one": "quantityUSDShort",
+                        "db_field_two": "quantityQTYShort",
+
+                        "button_one_text": "QTY",
+                        "button_two_text": "USD",
+
+                        "labelText_one":  "Amount to invest [USD]",
+                        "labelText_two":  "Amount to invest [QTY]",
+
+                        "hintText_one":  "Example: 100 USD",
+                        "hintText_two":  "Example: 100 unit",
+
+                        "is_mandatory": True,
+                        "is_double": True,
+                        "is_int": False,
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+                        "db_field_one": "stopLossLong",
+                        "db_field_two": "stopLossLongUsd",
+
+                        "button_one_text": "%",
+                        "button_two_text": "UNIT",
+
+                        "labelText_one":  "Stop Loss [%]",
+                        "labelText_two":  "Stop Loss [UNIT]",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "Example: 171.2Unit",
+
+                        "is_mandatory": False,
+                        "is_double": True,
+                        "is_int": False,
+
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+                        "db_field_one": "takeProfitLong",
+                        "db_field_two": "takeProfitLongUsd",
+
+                        "button_one_text": "%",
+                        "button_two_text": "UNIT",
+
+                        "labelText_one":  "Take Profit [%]",
+                        "labelText_two":  "Take Profit [UNIT]",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "Example: 171.2Unit",
+
+                        "is_mandatory": False,
+                        "is_double": True,
+                        "is_int": False,
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+
+                        "db_field_one": "consecutiveLossesLong",
+                        "db_field_two": "",
+
+                        "button_one_text": "numbers",
+                        "button_two_text": "",
+
+                        "labelText_one":  "Take Consecutive Losses Allowed",
+                        "labelText_two":  "",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "",
+
+                        "is_mandatory": False,
+                        "is_double": False,
+                        "is_int": True,
+
+                    },
+                    
+                ],
+            },
+            "alpaca": {
+                "long": [
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+
+                        "db_field_one": "quantityUSDLong",
+                        "db_field_two": "quantityQTYLong",
+
+                        "button_one_text": "QTY",
+                        "button_two_text": "USD",
+
+                        "labelText_one":  "Amount to invest [USD]",
+                        "labelText_two":  "Amount to invest [QTY]",
+
+                        "hintText_one":  "Example: 100 USD",
+                        "hintText_two":  "Example: 100 unit",
+
+                        "is_mandatory": True,
+                        "is_double": True,
+                        "is_int": False,
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+                        "db_field_one": "stopLossLong",
+                        "db_field_two": "stopLossLongUsd",
+
+                        "button_one_text": "%",
+                        "button_two_text": "UNIT",
+
+                        "labelText_one":  "Stop Loss [%]",
+                        "labelText_two":  "Stop Loss [UNIT]",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "Example: 171.2Unit",
+
+                        "is_mandatory": False,
+                        "is_double": True,
+                        "is_int": False,
+
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+                        "db_field_one": "takeProfitLong",
+                        "db_field_two": "takeProfitLongUsd",
+
+                        "button_one_text": "%",
+                        "button_two_text": "UNIT",
+
+                        "labelText_one":  "Take Profit [%]",
+                        "labelText_two":  "Take Profit [UNIT]",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "Example: 171.2Unit",
+
+                        "is_mandatory": False,
+                        "is_double": True,
+                        "is_int": False,
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+
+                        "db_field_one": "consecutiveLossesLong",
+                        "db_field_two": "",
+
+                        "button_one_text": "numbers",
+                        "button_two_text": "",
+
+                        "labelText_one":  "Take Consecutive Losses Allowed",
+                        "labelText_two":  "",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "",
+
+                        "is_mandatory": False,
+                        "is_double": False,
+                        "is_int": True,
+
+                    },
+
+
+                ],
+                "short": [
+
+   {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+
+                        "db_field_one": "quantityUSDShort",
+                        "db_field_two": "quantityQTYShort",
+
+                        "button_one_text": "QTY",
+                        "button_two_text": "USD",
+
+                        "labelText_one":  "Amount to invest [USD]",
+                        "labelText_two":  "Amount to invest [QTY]",
+
+                        "hintText_one":  "Example: 100 USD",
+                        "hintText_two":  "Example: 100 unit",
+
+                        "is_mandatory": True,
+                        "is_double": True,
+                        "is_int": False,
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+                        "db_field_one": "stopLossLong",
+                        "db_field_two": "stopLossLongUsd",
+
+                        "button_one_text": "%",
+                        "button_two_text": "UNIT",
+
+                        "labelText_one":  "Stop Loss [%]",
+                        "labelText_two":  "Stop Loss [UNIT]",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "Example: 171.2Unit",
+
+                        "is_mandatory": False,
+                        "is_double": True,
+                        "is_int": False,
+
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+                        
+                        "db_field_one": "takeProfitLong",
+                        "db_field_two": "takeProfitLongUsd",
+
+                        "button_one_text": "%",
+                        "button_two_text": "UNIT",
+
+                        "labelText_one":  "Take Profit [%]",
+                        "labelText_two":  "Take Profit [UNIT]",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "Example: 171.2Unit",
+
+                        "is_mandatory": False,
+                        "is_double": True,
+                        "is_int": False,
+                    },
+
+                    {       
+                        "show_button_unit": True,
+                        "show_button_levels": True,
+
+                        "db_field_one": "consecutiveLossesLong",
+                        "db_field_two": "",
+
+                        "button_one_text": "numbers",
+                        "button_two_text": "",
+
+                        "labelText_one":  "Take Consecutive Losses Allowed",
+                        "labelText_two":  "",
+
+                        "hintText_one":  "Example: -5%",
+                        "hintText_two":  "",
+
+                        "is_mandatory": False,
+                        "is_double": False,
+                        "is_int": True,
+
+                    },
+
+                ],
+            },
+        })
+
+
 class trading_config_view(generics.ListCreateAPIView):
 
     serializer_class = tradingConfigSerializers
@@ -35,13 +417,13 @@ class trading_config_view(generics.ListCreateAPIView):
 
         userId = request.user.id
         body = request.data
-        body['owner'] = userId
+        body["owner"] = userId
 
         # RuleJs of quantity or national
         # Get strategyNew Id:
         try:
             strategy = strategyNews.objects.get(
-                id=body['strategyNews'])
+                id=body["strategyNews"])
         except Exception as e:
             # Return
             return Response({
@@ -50,7 +432,7 @@ class trading_config_view(generics.ListCreateAPIView):
             }, status=status.HTTP_204_NO_CONTENT)
 
         trading_config_obj = trading_config.objects.filter(
-            owner_id=userId, strategyNews_id=body['strategyNews'])
+            owner_id=userId, strategyNews_id=body["strategyNews"])
 
         # Validate not exist inside of db this owner_id with this strategyNews_id
         if trading_config_obj.count() > 0:
@@ -61,7 +443,7 @@ class trading_config_view(generics.ListCreateAPIView):
             )
 
         # Get restrictions from the broker.
-        broker_obj = broker.objects.get(id=request.data['broker'])
+        broker_obj = broker.objects.get(id=request.data["broker"])
 
         trade_rules = {
             "short_is_allowed": broker_obj.short_is_allowed,
@@ -77,117 +459,120 @@ class trading_config_view(generics.ListCreateAPIView):
         is_crypto = strategy.symbol.is_crypto
 
         # Rules for verify if is allowed the trade
-        rules_controller = [
-            {
-                "is_crypto": True,
-                "variable_false": 'short_is_allowed_crypto',
-                "message": "The broker not allow the short crypto trade",
-                "request_data_variable": "is_active_short"
-            },
-            {
-                "is_crypto": True,
-                "variable_false": "long_is_allowed_crypto",
-                "message": "The broker not allow the long crypto trade",
-                "request_data_variable": "is_active_long"
-            },
-            {
-                "is_crypto": False,
-                "variable_false": "long_is_allowed",
-                "message": "The broker not allow the long trade",
-                "request_data_variable": "is_active_long"
-            },
-            {
-                "is_crypto": False,
-                "variable_false": "short_is_allowed",
-                "message": "The broker not allow the short trade",
-                "request_data_variable": "is_active_short"
-            },
-        ]
+
+        # rules_controller = [
+        #     {
+        #         "is_crypto": True,
+        #         "variable_false": "short_is_allowed_crypto",
+        #         "message": "The broker not allow the short crypto trade",
+        #         "request_data_variable": "is_active_short"
+        #     },
+        #     {
+        #         "is_crypto": True,
+        #         "variable_false": "long_is_allowed_crypto",
+        #         "message": "The broker not allow the long crypto trade",
+        #         "request_data_variable": "is_active_long"
+        #     },
+        #     {
+        #         "is_crypto": False,
+        #         "variable_false": "long_is_allowed",
+        #         "message": "The broker not allow the long trade",
+        #         "request_data_variable": "is_active_long"
+        #     },
+        #     {
+        #         "is_crypto": False,
+        #         "variable_false": "short_is_allowed",
+        #         "message": "The broker not allow the short trade",
+        #         "request_data_variable": "is_active_short"
+        #     },
+        # ]
 
         # Check if is allowed the trade if is not crypto trade
         # for rule in rules_controller:
-            # if rule['is_crypto'] == is_crypto:
-                # if not getattr(broker_obj, rule['variable_false']):
+            # if rule["is_crypto"] == is_crypto:
+                # if not getattr(broker_obj, rule["variable_false"]):
 
-                    # if request.data[rule['request_data_variable']] == True:
+                    # if request.data[rule["request_data_variable"]] == True:
                         #TODO fix this controller
                         # print("@Note-01 ---- 320551155 -----")
                         # return Response({
                         #     "status": "error",
-                        #     "message": rule['message'],
+                        #     "message": rule["message"],
                         #     "trade_rules": trade_rules
                         # }, status=status.HTTP_400_BAD_REQUEST)
 
-        rule_controller = [
-            {
-                "is_crypto": True,
-                "variable_false": "short_allowed_fractional_crypto",
-                "mandatory_variable": "quantityQTYShort",
-                "mandatory_usd_variable": "quantityUSDShort",
-                "is_interger_value": False,
-                "message": "The broker not allow the fractional crypto trade"
-            },
-            {
-                "is_crypto": True,
-                "variable_false": "long_allowed_fractional_crypto",
-                "mandatory_variable": "quantityQTYLong",
-                "mandatory_usd_variable": "quantityUSDLong",
-                "is_interger_value": False,
-                "message": "The broker not allow the fractional crypto trade"
-            },
-            {
-                "is_crypto": False,
-                "variable_false": "short_allowed_fractional",
-                "mandatory_variable": "quantityQTYShort",
-                "mandatory_usd_variable": "quantityUSDShort",
-                "is_interger_value": False,
-                "message": "The broker not allow the fractional trade"
-            },
-            {
-                "is_crypto": False,
-                "variable_false": "long_allowed_fractional",
-                "mandatory_variable": "quantityQTYLong",
-                "mandatory_usd_variable": "quantityUSDLong",
-                "is_interger_value": False,
-                "message": "The broker not allow the fractional trade"
-            },
-        ]
+        # rule_controller = [
+        #     {
+        #         "is_crypto": True,
+        #         "variable_false": "short_allowed_fractional_crypto",
+        #         "mandatory_variable": "quantityQTYShort",
+        #         "mandatory_usd_variable": "quantityUSDShort",
+        #         "is_interger_value": False,
+        #         "message": "The broker not allow the fractional crypto trade"
+        #     },
+        #     {
+        #         "is_crypto": True,
+        #         "variable_false": "long_allowed_fractional_crypto",
+        #         "mandatory_variable": "quantityQTYLong",
+        #         "mandatory_usd_variable": "quantityUSDLong",
+        #         "is_interger_value": False,
+        #         "message": "The broker not allow the fractional crypto trade"
+        #     },
+        #     {
+        #         "is_crypto": False,
+        #         "variable_false": "short_allowed_fractional",
+        #         "mandatory_variable": "quantityQTYShort",
+        #         "mandatory_usd_variable": "quantityUSDShort",
+        #         "is_interger_value": False,
+        #         "message": "The broker not allow the fractional trade"
+        #     },
+        #     {
+        #         "is_crypto": False,
+        #         "variable_false": "long_allowed_fractional",
+        #         "mandatory_variable": "quantityQTYLong",
+        #         "mandatory_usd_variable": "quantityUSDLong",
+        #         "is_interger_value": False,
+        #         "message": "The broker not allow the fractional trade"
+        #     },
+        # ]
 
         # TODO test this controller.
-        for rule in rule_controller:
-            if rule['is_crypto'] == is_crypto:
-                if not getattr(broker_obj, rule['variable_false']):
-                    if not rule['is_interger_value']:
+        # for rule in rule_controller:
+        #     if rule["is_crypto"] == is_crypto:
+        #         if not getattr(broker_obj, rule["variable_false"]):
+        #             if not rule["is_interger_value"]:
 
-                        value_qty = body.get(rule['mandatory_variable'])
-                        #TODO create the test controller
-                        # if not body.get(rule['mandatory_variable']) and not body.get(rule['mandatory_usd_variable']):
-                        #     # Return one error, not is allowed the fractional trade
-                        #     return Response({
-                        #         "status": "error",
-                        #         "message": rule['message'],
-                        #         "trade_rules": trade_rules
-                        #     }, status=status.HTTP_400_BAD_REQUEST)
-                    else:
-                        if not body.get(rule['mandatory_variable']):
-                            # Return one error, not is allowed the fractional trade
-                            return Response({
-                                "status": "error",
-                                "message": rule['message'],
-                                "trade_rules": trade_rules
-                            }, status=status.HTTP_400_BAD_REQUEST)
+        #                 value_qty = body.get(rule["mandatory_variable"])
+        #                 #TODO create the test controller
+        #                 # if not body.get(rule["mandatory_variable"]) and not body.get(rule["mandatory_usd_variable"]):
+        #                 #     # Return one error, not is allowed the fractional trade
+        #                 #     return Response({
+        #                 #         "status": "error",
+        #                 #         "message": rule["message"],
+        #                 #         "trade_rules": trade_rules
+        #                 #     }, status=status.HTTP_400_BAD_REQUEST)
+        #             else:
+        #                 if not body.get(rule["mandatory_variable"]):
+        #                     # Return one error, not is allowed the fractional trade
+        #                     return Response({
+        #                         "status": "error",
+        #                         "message": rule["message"],
+        #                         "trade_rules": trade_rules
+        #                     }, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = tradingConfigSerializers(data=body)
+
         if serializer.is_valid(raise_exception=True):
             serializer.save()
 
             # Add this follower inside of the strategyNews in manyToManyField  Follower
             try:
                 strategyNews(
-                    id=body['strategyNews']).follower.add(userId)
+                    id=body["strategyNews"]).follower.add(userId)
             except Exception as e:
+
                 print(e)
-                print('The user is follower')
+                print("The user is follower")
 
             return Response({
                 "status": "success",
@@ -196,6 +581,7 @@ class trading_config_view(generics.ListCreateAPIView):
             }, status=status.HTTP_201_CREATED)
 
         else:
+
             return Response({
                 "status": "error",
                 "message": "Trading Parameter not created",
@@ -213,7 +599,7 @@ class trading_config_view(generics.ListCreateAPIView):
 
         userId = request.user.id
         body = request.data
-        body['owner'] = userId
+        body["owner"] = userId
 
         # Filter data only by owner_id
         data = trading_config.objects.filter(owner=userId).values()
@@ -242,7 +628,7 @@ class trading_config_slug_views(generics.RetrieveUpdateDestroyAPIView):
 
         userId = request.user.id
         body = request.data
-        body['owner'] = userId
+        body["owner"] = userId
 
         # Filter data only by owner_id
         data = trading_config.objects.filter(owner_id=userId, id=slug)
@@ -317,16 +703,16 @@ class trading_config_get_all_view(generics.ListAPIView):
         user = self.request.user
 
         # Get the parameter of the request
-        category = self.request.query_params.get('category', None)
+        category = self.request.query_params.get("category", None)
 
         try:
-            if category == 'active':
+            if category == "active":
                 results = trading_config.objects.filter(owner_id=user.id, is_active_short__in=[True], is_active_long__in=[True])
-            elif category == 'inactive':
+            elif category == "inactive":
                 results = trading_config.objects.filter(owner_id=user.id, is_active_short__in=[False], is_active_long__in=[False])
-            elif category == 'winners':
+            elif category == "winners":
                 results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__gte=0, profitPorcentageLong__gte=0)
-            elif category == 'losses':
+            elif category == "losses":
 
                 results = trading_config.objects.filter(owner_id=user.id, profitPorcentageShort__lte=0, profitPorcentageLong__lte=0)
 
@@ -409,11 +795,11 @@ class strategy_view(generics.GenericAPIView):
                 if tradingConfig.is_active == True:
                     try:
                         message_success = trading_action(tradingConfig, order=data.order)
-                        response_data['messages'].append(message_success)
-                        response_data['closed_trades'] += 1
+                        response_data["messages"].append(message_success)
+                        response_data["closed_trades"] += 1
                     except Exception as e:
                         code_response = 501
-                        response_data['errors_trade'] += 1
+                        response_data["errors_trade"] += 1
                         response_data["errors"].append(str(e))
                 # Transaction open
             except Exception as e:
@@ -423,20 +809,20 @@ class strategy_view(generics.GenericAPIView):
 
             return Response({
                 "status": "success",
-                "message": response_data['messages'],
-                "errors": response_data['errors'],
-                "closed_trades": response_data['closed_trades'],
-                "errors_trade": response_data['errors_trade'],
+                "message": response_data["messages"],
+                "errors": response_data["errors"],
+                "closed_trades": response_data["closed_trades"],
+                "errors_trade": response_data["errors_trade"],
             }, status=status.HTTP_200_OK)
 
         else:
 
             return Response({
                 "status": "warning",
-                "message":response_data['messages'],
-                "errors": response_data['errors'],
-                "closed_trades": response_data['closed_trades'],
-                "errors_trade": response_data['errors_trade'],
+                "message":response_data["messages"],
+                "errors": response_data["errors"],
+                "closed_trades": response_data["closed_trades"],
+                "errors_trade": response_data["errors_trade"],
             }, status=status.HTTP_501_NOT_IMPLEMENTED)
 
 
@@ -459,7 +845,7 @@ class tradingOpenLongView(generics.GenericAPIView):
 
         # Get parameter pk from request data django
         # TODO, Update the test for send the pk how parameter.
-        trading_config_id = self.kwargs['pk']
+        trading_config_id = self.kwargs["pk"]
         print(trading_config_id)
         
         userId = request.user.id
@@ -492,7 +878,7 @@ class tradingOpenLongView(generics.GenericAPIView):
                 "spread": 0,
                 "qty": 0,
                 "price_open": 0,
-                "trade_type": 'long',
+                "trade_type": "long",
                 "is_winner": False
             },
             "short": {
@@ -505,7 +891,7 @@ class tradingOpenLongView(generics.GenericAPIView):
                 "spread": 0,
                 "qty": 0,
                 "price_open": 0,
-                "trade_type": 'short',
+                "trade_type": "short",
                 "number_stocks": 0,
                 "is_winner": False
             }
@@ -536,7 +922,7 @@ class tradingOpenLongView(generics.GenericAPIView):
 
         # Create one Long Trade
         results = broker_controller.long_trade(
-            order='buy',
+            order="buy",
             broker_name=trading_config_obj.broker.broker,
             is_active_long=trading_config_obj.is_active_long,
             results=results,
@@ -575,7 +961,7 @@ class tradingOpenShortView(generics.GenericAPIView):
 
         # Get parameter pk from request data django
         # TODO, Update the test for send the pk how parameter.
-        trading_config_id = self.kwargs['pk']
+        trading_config_id = self.kwargs["pk"]
         print(trading_config_id)
         
         userId = request.user.id
@@ -608,7 +994,7 @@ class tradingOpenShortView(generics.GenericAPIView):
                 "spread": 0,
                 "qty": 0,
                 "price_open": 0,
-                "trade_type": 'long',
+                "trade_type": "long",
                 "is_winner": False
             },
             "short": {
@@ -621,7 +1007,7 @@ class tradingOpenShortView(generics.GenericAPIView):
                 "spread": 0,
                 "qty": 0,
                 "price_open": 0,
-                "trade_type": 'short',
+                "trade_type": "short",
                 "number_stocks": 0,
                 "is_winner": False
             }
@@ -652,7 +1038,7 @@ class tradingOpenShortView(generics.GenericAPIView):
 
         # Create one Long Trade
         # results = broker_controller.long_trade(
-        #     order='buy',
+        #     order="buy",
         #     broker_name=trading_config_obj.broker.broker,
         #     is_active_long=trading_config_obj.is_active_long,
         #     results=results,
@@ -660,7 +1046,7 @@ class tradingOpenShortView(generics.GenericAPIView):
 
         # # Create Short Trade
         results = broker_controller.short_trade(
-            order='sell',
+            order="sell",
             broker_name=trading_config_obj.broker.broker,
             is_active_short=trading_config_obj.is_active_short,
             results=results,

@@ -66,9 +66,9 @@ class tradingConfigSerializers(serializers.ModelSerializer):
     broker = serializers.PrimaryKeyRelatedField(
         read_only=False, queryset=broker.objects.all())
         
-    quantityUSDLong = serializers.FloatField(default=0.0)
-    quantityUSDShort = serializers.FloatField(default=0.0)
-    quantityQTYLong = serializers.FloatField(default=0.0)
+    quantityUSDLong = serializers.FloatField(default=0.0, required=False)
+    quantityUSDShort = serializers.FloatField(default=0.0, required=False)
+    quantityQTYLong = serializers.FloatField(default=0.0, required=False)
     quantityQTYShort = serializers.FloatField(default=0.0, required=False)
 
     useLong = serializers.BooleanField(default=True)

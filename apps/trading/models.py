@@ -18,7 +18,10 @@ class trading_config(models.Model):
 
     useLong =  models.BooleanField(default=False, blank=True,null=True)
     stopLossLong = models.FloatField( null=True, blank=True, default=-3)
+    stopLossLongUsd = models.FloatField( null=True, blank=True, default=-3)
+
     takeProfitLong = models.FloatField( null=True, blank=True, default=10)
+    takeProfitLongUsd = models.FloatField( null=True, blank=True, default=10)
     consecutiveLossesLong = models.IntegerField( null=True, blank=True, default=3)
     
     # Trading Short Parameters:
