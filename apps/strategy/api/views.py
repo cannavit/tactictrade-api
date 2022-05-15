@@ -323,6 +323,8 @@ class PutStrategySocialAPIview(generics.UpdateAPIView):
                 if strategyNews(id=strategyId).likes.filter(id=userId).count() > 0:
                     strategyNews(id=strategyId).likes.remove(userId)
 
+    
+
         # Logic for favorite
         if 'favorite' in body:
             if body['favorite'] == True:
@@ -341,10 +343,14 @@ class PutStrategySocialAPIview(generics.UpdateAPIView):
                 if strategyNews(id=strategyId).followers.filter(id=userId).count() > 0:
                     strategyNews(id=strategyId).followers.remove(userId)
 
+        likes = strategyNews(id=strategyId).likes.count()
+
+
         # Respose with code 200
         return Response({
             "status": "success",
-            "message": "Strategy updated successfully"
+            "message": "Strategy updated successfully",
+            "likes": likes,
         }, status=status.HTTP_200_OK)
 
         # print(userId)

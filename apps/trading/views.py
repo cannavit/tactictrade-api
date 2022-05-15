@@ -82,7 +82,7 @@ class trading_config_flutter_view(generics.ListCreateAPIView):
                 "long": paperTrade_long_crypto,
                 "short": paperTrade_short_crypto,
             }
-
+            
             alpaca = {
                 "long": alpaca_long_crypto,
                 "short": alpaca_short_crypto,
