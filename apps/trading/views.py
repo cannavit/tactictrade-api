@@ -19,13 +19,29 @@ from apps.transaction.models import transactions as transaction_model
 from utils.convert_json_to_objects import convertJsonToObject
 # Create your views here.t
 
+import json
+
+# Import configuration for create dynamic view in fluttter app.
+
+# Import json file of alpaca config
+alpaca_long = json.load(open('apps/trading/trading_config_views/alpaca_long.json'))
+alpaca_short = json.load(open('apps/trading/trading_config_views/alpaca_short.json'))
+alpaca_short_crypto = json.load(open('apps/trading/trading_config_views/alpaca_short_crypto.json'))
+alpaca_long_crypto = json.load(open('apps/trading/trading_config_views/alpaca_long_crypto.json'))
+
+# Import json file for papertrade config
+paperTrade_long = json.load(open('apps/trading/trading_config_views/paperTrade_long.json'))
+paperTrade_short = json.load(open('apps/trading/trading_config_views/paperTrade_short.json'))
+paperTrade_short_crypto = json.load(open('apps/trading/trading_config_views/paperTrade_short_crypto.json'))
+paperTrade_long_crypto = json.load(open('apps/trading/trading_config_views/paperTrade_long_crypto.json'))
+
 class trading_config_flutter_view(generics.ListCreateAPIView):
 
     serializer_class = tradingConfigSerializers
     queryset = trading_config.objects.all()
     permissions_classes = (permissions.IsAuthenticated,)
 
-    def get(self, request):
+    def get(self, request, pk):
 
         if request.auth == None:
             return Response({
@@ -33,371 +49,51 @@ class trading_config_flutter_view(generics.ListCreateAPIView):
                 "message": "Authentication request or invalid token",
             }, status=status.HTTP_400_BAD_REQUEST)     
 
+        # Get the bro
+
+        try:
+            strategy_obj = strategyNews.objects.get(id=pk)
+        except Exception as e:
+            print(e)
+            return Response({
+                "status": "error",
+                "message": "Strategy not found",
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+        is_crypto = strategy_obj.symbol.is_crypto 
+
+        # Import Json file for not crypto 
+        if not is_crypto:
+            # Read Json file
+            paperTrade = {
+                "long": paperTrade_long,
+                "short": paperTrade_short,
+            }
+
+            alpaca = {
+                "long": alpaca_long,
+                "short": alpaca_short,
+            }
+
+        else:
+
+            paperTrade = {
+                "long": paperTrade_long_crypto,
+                "short": paperTrade_short_crypto,
+            }
+
+            alpaca = {
+                "long": alpaca_long_crypto,
+                "short": alpaca_short_crypto,
+            }
+
         return Response({
             "status": "success",
             "message": "Trading configs for view",
-            "paperTrade": {
-                "long": [
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-
-                        "db_field_one": "quantityUSDLong",
-                        "db_field_two": "quantityQTYLong",
-
-                        "button_one_text": "QTY",
-                        "button_two_text": "USD",
-
-                        "labelText_one":  "Amount to invest [USD]",
-                        "labelText_two":  "Amount to invest [QTY]",
-
-                        "hintText_one":  "Example: 100 USD",
-                        "hintText_two":  "Example: 100 unit",
-
-                        "is_mandatory": True,
-                        "is_double": True,
-                        "is_int": False,
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-                        "db_field_one": "stopLossLong",
-                        "db_field_two": "stopLossLongUsd",
-
-                        "button_one_text": "%",
-                        "button_two_text": "UNIT",
-
-                        "labelText_one":  "Stop Loss [%]",
-                        "labelText_two":  "Stop Loss [UNIT]",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "Example: 171.2Unit",
-
-                        "is_mandatory": False,
-                        "is_double": True,
-                        "is_int": False,
-
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-                        "db_field_one": "takeProfitLong",
-                        "db_field_two": "takeProfitLongUsd",
-
-                        "button_one_text": "%",
-                        "button_two_text": "UNIT",
-
-                        "labelText_one":  "Take Profit [%]",
-                        "labelText_two":  "Take Profit [UNIT]",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "Example: 171.2Unit",
-
-                        "is_mandatory": False,
-                        "is_double": True,
-                        "is_int": False,
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-
-                        "db_field_one": "consecutiveLossesLong",
-                        "db_field_two": "",
-
-                        "button_one_text": "numbers",
-                        "button_two_text": "",
-
-                        "labelText_one":  "Take Consecutive Losses Allowed",
-                        "labelText_two":  "",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "",
-
-                        "is_mandatory": False,
-                        "is_double": False,
-                        "is_int": True,
-
-                    },
-
-
-                ],
-                "short": [
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-
-                        "db_field_one": "quantityUSDShort",
-                        "db_field_two": "quantityQTYShort",
-
-                        "button_one_text": "QTY",
-                        "button_two_text": "USD",
-
-                        "labelText_one":  "Amount to invest [USD]",
-                        "labelText_two":  "Amount to invest [QTY]",
-
-                        "hintText_one":  "Example: 100 USD",
-                        "hintText_two":  "Example: 100 unit",
-
-                        "is_mandatory": True,
-                        "is_double": True,
-                        "is_int": False,
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-                        "db_field_one": "stopLossLong",
-                        "db_field_two": "stopLossLongUsd",
-
-                        "button_one_text": "%",
-                        "button_two_text": "UNIT",
-
-                        "labelText_one":  "Stop Loss [%]",
-                        "labelText_two":  "Stop Loss [UNIT]",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "Example: 171.2Unit",
-
-                        "is_mandatory": False,
-                        "is_double": True,
-                        "is_int": False,
-
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-                        "db_field_one": "takeProfitLong",
-                        "db_field_two": "takeProfitLongUsd",
-
-                        "button_one_text": "%",
-                        "button_two_text": "UNIT",
-
-                        "labelText_one":  "Take Profit [%]",
-                        "labelText_two":  "Take Profit [UNIT]",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "Example: 171.2Unit",
-
-                        "is_mandatory": False,
-                        "is_double": True,
-                        "is_int": False,
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-
-                        "db_field_one": "consecutiveLossesLong",
-                        "db_field_two": "",
-
-                        "button_one_text": "numbers",
-                        "button_two_text": "",
-
-                        "labelText_one":  "Take Consecutive Losses Allowed",
-                        "labelText_two":  "",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "",
-
-                        "is_mandatory": False,
-                        "is_double": False,
-                        "is_int": True,
-
-                    },
-                    
-                ],
-            },
-            "alpaca": {
-                "long": [
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-
-                        "db_field_one": "quantityUSDLong",
-                        "db_field_two": "quantityQTYLong",
-
-                        "button_one_text": "QTY",
-                        "button_two_text": "USD",
-
-                        "labelText_one":  "Amount to invest [USD]",
-                        "labelText_two":  "Amount to invest [QTY]",
-
-                        "hintText_one":  "Example: 100 USD",
-                        "hintText_two":  "Example: 100 unit",
-
-                        "is_mandatory": True,
-                        "is_double": True,
-                        "is_int": False,
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-                        "db_field_one": "stopLossLong",
-                        "db_field_two": "stopLossLongUsd",
-
-                        "button_one_text": "%",
-                        "button_two_text": "UNIT",
-
-                        "labelText_one":  "Stop Loss [%]",
-                        "labelText_two":  "Stop Loss [UNIT]",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "Example: 171.2Unit",
-
-                        "is_mandatory": False,
-                        "is_double": True,
-                        "is_int": False,
-
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-                        "db_field_one": "takeProfitLong",
-                        "db_field_two": "takeProfitLongUsd",
-
-                        "button_one_text": "%",
-                        "button_two_text": "UNIT",
-
-                        "labelText_one":  "Take Profit [%]",
-                        "labelText_two":  "Take Profit [UNIT]",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "Example: 171.2Unit",
-
-                        "is_mandatory": False,
-                        "is_double": True,
-                        "is_int": False,
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-
-                        "db_field_one": "consecutiveLossesLong",
-                        "db_field_two": "",
-
-                        "button_one_text": "numbers",
-                        "button_two_text": "",
-
-                        "labelText_one":  "Take Consecutive Losses Allowed",
-                        "labelText_two":  "",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "",
-
-                        "is_mandatory": False,
-                        "is_double": False,
-                        "is_int": True,
-
-                    },
-
-
-                ],
-                "short": [
-
-   {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-
-                        "db_field_one": "quantityUSDShort",
-                        "db_field_two": "quantityQTYShort",
-
-                        "button_one_text": "QTY",
-                        "button_two_text": "USD",
-
-                        "labelText_one":  "Amount to invest [USD]",
-                        "labelText_two":  "Amount to invest [QTY]",
-
-                        "hintText_one":  "Example: 100 USD",
-                        "hintText_two":  "Example: 100 unit",
-
-                        "is_mandatory": True,
-                        "is_double": True,
-                        "is_int": False,
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-                        "db_field_one": "stopLossLong",
-                        "db_field_two": "stopLossLongUsd",
-
-                        "button_one_text": "%",
-                        "button_two_text": "UNIT",
-
-                        "labelText_one":  "Stop Loss [%]",
-                        "labelText_two":  "Stop Loss [UNIT]",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "Example: 171.2Unit",
-
-                        "is_mandatory": False,
-                        "is_double": True,
-                        "is_int": False,
-
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-                        
-                        "db_field_one": "takeProfitLong",
-                        "db_field_two": "takeProfitLongUsd",
-
-                        "button_one_text": "%",
-                        "button_two_text": "UNIT",
-
-                        "labelText_one":  "Take Profit [%]",
-                        "labelText_two":  "Take Profit [UNIT]",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "Example: 171.2Unit",
-
-                        "is_mandatory": False,
-                        "is_double": True,
-                        "is_int": False,
-                    },
-
-                    {       
-                        "show_button_unit": True,
-                        "show_button_levels": True,
-
-                        "db_field_one": "consecutiveLossesLong",
-                        "db_field_two": "",
-
-                        "button_one_text": "numbers",
-                        "button_two_text": "",
-
-                        "labelText_one":  "Take Consecutive Losses Allowed",
-                        "labelText_two":  "",
-
-                        "hintText_one":  "Example: -5%",
-                        "hintText_two":  "",
-
-                        "is_mandatory": False,
-                        "is_double": False,
-                        "is_int": True,
-
-                    },
-
-                ],
-            },
-        })
+            "paperTrade": paperTrade,
+            "alpaca": alpaca
+        }, status=status.HTTP_200_OK)
 
 
 class trading_config_view(generics.ListCreateAPIView):

@@ -12,6 +12,17 @@ class settingSerializers(serializers.ModelSerializer):
         model  = setting
         fields = '__all__'
 
+        # fields = [
+        #     'owner',
+        #     'setting',
+        #     'family',
+        #     'is_active',
+        #     'bool_value',
+        #     'string_value',
+        #     'icon',
+        #     'is_switch_on',
+        # ]
+
 class featureFlagsSerializers(serializers.ModelSerializer):
     class Meta:
         model  = feature_flag

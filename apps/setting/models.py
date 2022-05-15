@@ -15,12 +15,12 @@ class setting(models.Model):
 
     FAMILY_SETTINGS = [
         ('Notifications', 'notifications'),
+        ('Language', 'language'),
         ('Test', 'test'),
-
     ]
     
     owner = models.ForeignKey(to=User, on_delete=models.CASCADE)
-    setting  = models.CharField(choices=CATEGORY_SETTINGS,null=False,blank=False,max_length=100, unique=True)
+    setting  = models.CharField(choices=CATEGORY_SETTINGS,null=False,blank=False,max_length=100, unique=False)
     family = models.CharField(choices=FAMILY_SETTINGS,null=False,blank=False,max_length=100)
 
     is_active = models.BooleanField(default=True)

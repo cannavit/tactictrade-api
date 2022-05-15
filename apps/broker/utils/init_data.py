@@ -32,30 +32,31 @@ class InitData:
 
         data = {
             'owner':  userId,
-            'setting': 'notifications_push_short',
+            'setting': 'Receive Short Notifications Push',
             'is_active': True,
             'bool_value': True,
             'string_value': '',
             'is_switch_on': True,
             'icon': '0xf234',
-            'family': 'notifications',
+            'family': 'Notifications',
         }
 
         serializer_data = setting_serializer(data=data)
 
         if serializer_data.is_valid(raise_exception=True):    
             serializer_data.save()
+            
 
         # notifications_push_long
         data = {
             'owner':  userId,
-            'setting': 'notifications_push_long',
+            'setting': 'Receive Long Notifications Push',
             'is_active': True,
             'bool_value': True,
             'string_value': '',
             'is_switch_on': True,
             'icon': '0xf234',
-            'family': 'notifications',
+            'family': 'Notifications',
 
         }
 
@@ -72,6 +73,7 @@ class InitData:
             'bool_value': False,
             'string_value': 'en',
             'is_switch_on': False,
+            'family': 'Language',
         }
 
         serializer_data = setting_serializer(data=data)

@@ -6,7 +6,8 @@ urlpatterns = [
     # Declarate path for the view tradingValueViews
     path('tradingvalues', views.trading_config_view.as_view(),
          name='create_tradingValue'),
-    path('view_flutter', views.trading_config_flutter_view.as_view(),
+         
+    path('view_flutter/<int:pk>', views.trading_config_flutter_view.as_view(),
          name='view_flutter'),
 
     path('all', views.trading_config_get_all_view.as_view(), name='all'),

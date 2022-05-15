@@ -45,7 +45,7 @@ or
 ## Create superuser
 
     python manage.py createsuperuser
-## Run app 
+## Run app jj
 
     python manage.py runserver
 
