@@ -57,8 +57,6 @@ def create_update_feature_flag(modeladmin, request, queryset):
             messages.success(request, 'Create '+ feature.feature + ' Successfully')
 
 
-        print("@Note-01 ---- -582967494 -----")
-            # print(instance)
 
 
       

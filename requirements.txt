@@ -41,5 +41,5 @@ django-cors-headers
 channels
 channels_redis
 daphne
-
+datetime
 # Yahoo socket for get the realtime data

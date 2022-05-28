@@ -91,6 +91,7 @@ INSTALLED_APPS = [
     'apps.broker',
     'apps.notification',
     'apps.asset',
+    'apps.market_data',
    
 ]
 

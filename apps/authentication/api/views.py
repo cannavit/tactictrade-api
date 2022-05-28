@@ -2,7 +2,6 @@
 import ast
 import json
 import os
-
 import jwt
 import requests
 from apps.authentication.models import User, followers_mantainers

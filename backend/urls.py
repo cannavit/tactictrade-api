@@ -34,6 +34,8 @@ urlpatterns = [
     path('transactions/', include('apps.transaction.urls')),
     path('notifications/', include('apps.notification.api.urls')),
     path('settings/', include('apps.setting.api.urls')),
+    path('market_data/', include('apps.market_data.api.urls')),
+
 
 
 
