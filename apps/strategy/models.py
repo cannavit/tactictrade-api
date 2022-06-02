@@ -1,7 +1,6 @@
 from django.db import models
 from apps.authentication.models import User
 
-
 class symbolStrategy(models.Model):
 
     symbolName = models.CharField(
@@ -17,7 +16,6 @@ class symbolStrategy(models.Model):
 
     def __str__(self):
         return self.symbolName
-
 
 
 

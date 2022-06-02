@@ -11,6 +11,18 @@
 
 def candle_controller_default(strategy_period='hour'):
 
+
+    if strategy_period == 'hours':
+        strategy_period = 'hour'
+    elif strategy_period == 'minutes':
+        strategy_period = 'minute'
+    elif strategy_period == 'days':
+        strategy_period = 'day'
+    elif strategy_period == 'weeks':
+        strategy_period = 'week'
+    elif strategy_period == 'months':
+        strategy_period = 'month'
+        
     controller_candle = {
         'hour': {
                     "title": "1 weeks",
@@ -44,6 +56,18 @@ def candle_controller_default(strategy_period='hour'):
 
 
 def candle_controller_graph(strategy_period='hour'):
+
+    if strategy_period == 'hours':
+        strategy_period = 'hour'
+    elif strategy_period == 'minutes':
+        strategy_period = 'minute'
+    elif strategy_period == 'days':
+        strategy_period = 'day'
+    elif strategy_period == 'weeks':
+        strategy_period = 'week'
+    elif strategy_period == 'months':
+        strategy_period = 'month'
+    
 
 
     controller_candle_graph = {
