@@ -72,4 +72,6 @@ class SettingListAPI_View(ListAPIView):
          # get the fields with values for filtering 
         if filtering_kwargs:
             queryset = setting.objects.filter(**filtering_kwargs) # filter the queryset based on 'filtering_kwargs'
+
+        
         return queryset

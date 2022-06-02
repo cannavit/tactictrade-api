@@ -47,9 +47,6 @@ results = {
 
 
 
-
-
-
 @admin.action(description='Create Long Trade')
 def create_long_order(modeladmin, request, queryset):
 

@@ -1,6 +1,7 @@
 
 import ast
 from pandas import period_range
+from pytz import HOUR
 import yfinance as yf
 from datetime import  timedelta, date
 
@@ -75,3 +76,44 @@ class import_data_ticket():
 
 # import pandas_datareader as data_reader
 # dataset = data_reader.DataReader('AAPL',data_source='yahoo')
+
+
+
+    # Category(null, 'hour', null, '1h'),
+    # Category(null, 'day', null, '1d'),
+    # Category(null, 'week', null, '1w'),
+    # Category(null, 'month', null, '1m'),
+    # Category(null, 'year', null, '1y'),
+    # Category(null, '5 Years', null, '5y'),
+
+
+# def BuildCarouselApp(strategyPeriod='hour'):
+
+
+#     # strategyPeriod = 'hour'
+
+#     # if strategyPeriod == 'hour':
+
+#     #     carouse_data = [
+#     #         {
+#     #             title: 'hour',
+#     #             interval: '5m'
+#     #         }
+#     #     ]
+#     #         Category(null, 'hour', null, '5m')
+
+
+# hour 
+
+#     interval = HOUR
+
+#  Control  |      period     [               interval              ]
+#    hour   | hour (1h)   >>   1d  3d  1w   2w   1mo  3m   6m  1y  2y   (default 2w)
+#    minute | minute (1m) >>   1d  3d  1wk  2wk  3wk  4wk  5wk 6mk 7mk  (default 2wk)
+#    day    | day (1d)    >>   2wk 3wk 1mo  3mo  5mo  6mo  8mo 1y  2y   (default 3mo)
+#    week   | week (1wk)  >>   1mo 3mo 5mo  6mo  8mo  10mo 1y  2y       (default 6mo)
+#    year   | year (1y)   >>   2y  3y  4y   5y                          (default 5y)
+
+
+
+

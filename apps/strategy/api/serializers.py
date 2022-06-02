@@ -5,6 +5,7 @@ from apps.strategy.models import strategyNews, symbolStrategy
 from apps.authentication.models import User
 from django.conf import settings
 from apps.trading.models import trading_config
+from utils.controller_candle_graph import candle_controller_default, candle_controller_graph
 
 
 class OwnerStrategySerializers(serializers.ModelSerializer):
@@ -82,15 +83,18 @@ class SettingsSerializers(serializers.ModelSerializer):
 
         response['likes_number'] = strategy_obj.filter(
             likes__in=[user_id]).count()
-
-
-
         response['post_image'] = response['url_image']
+
+        response['controller_candle_graph'] = candle_controller_graph(instance.period)
+        response['controller_candle_default'] = candle_controller_default(instance.period)
+
 
         if response['owner']['url_picture'] == None:
             response['owner']['profile_image'] = 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Circle-icons-profile.svg/1200px-Circle-icons-profile.svg.png'
         else:
             response['owner']['profile_image'] = response['owner']['url_picture']
+
+
 
         return response
 

@@ -19,17 +19,22 @@ class symbolStrategy(models.Model):
         return self.symbolName
 
 
+
+
 class strategyNews(models.Model):
 
     STRATEGY_PUSH = [
         ('https://s3.tradingview.com/userpics/6171439-Hlns_big.png', 'TradingView'),
+        ('https://ik.imagekit.io/tactictrade/IconIALogo_A29Qe98TSX.png?ik-sdk-version=javascript-1.4.3&updatedAt=1653761986425', 'TacticTradeIA'),
+
     ]
 
     STRATEGY_TIME = [
-        ('minutes', 'm'),
-        ('hours', 'h'),
-        ('days', 'd'),
-        ('weeks', 'w'),
+        ('minute', 'minute'),
+        ('hour', 'hour'),
+        ('day', 'day'),
+        ('week', 'week'),
+        ('year', 'year'),
     ]
 
     owner = models.ForeignKey(
@@ -40,7 +45,7 @@ class strategyNews(models.Model):
         to=symbolStrategy, on_delete=models.CASCADE, blank=True, null=False)
 
     pusher = models.CharField(
-        choices=STRATEGY_PUSH, default='tradingview', null=True, blank=True, max_length=60)
+        choices=STRATEGY_PUSH, default='tradingview', null=True, blank=True, max_length=200)
 
     is_public = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
@@ -70,7 +75,7 @@ class strategyNews(models.Model):
         blank=True, null=True, max_length=400, unique=True)
 
     period = models.CharField(
-        choices=STRATEGY_TIME, null=True, blank=True, max_length=60, default='hours')
+        choices=STRATEGY_TIME, null=True, blank=True, max_length=60, default='hour')
         
     timer = models.IntegerField(default=1, null=True, blank=True)
 
@@ -91,13 +96,7 @@ class strategyNews(models.Model):
     email_bot = models.CharField(
         blank=True, null=True, max_length=60, default="")
 
+    
+
     def __str__(self):
         return self.strategyNews
-
-    # def check_name_if_exist_this_strategy(self):
-    #     if self.__class__.object.filter(strategyNews=self.strategyNews):
-    #         return False
-    #     else:
-    #         return True
-
-# eturned non-string (type

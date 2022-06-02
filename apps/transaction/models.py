@@ -1,5 +1,6 @@
 # Create your models here.
 # from re import I
+import datetime
 from django.db import models
 # Create your models here.
 from django.db.models.signals import post_save, pre_save
@@ -21,6 +22,8 @@ import alpaca_trade_api as tradeapi
 from django.contrib import messages
 
 from utils.convert_json_to_objects import convertJsonToObject
+
+from datetime import datetime
 
 from apps.notification.models import notification as notification_model
 class transactions(models.Model):
@@ -89,6 +92,7 @@ class transactions(models.Model):
 
     create_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    close_at = models.DateTimeField(blank=True,null=True)
 
     isClosed = models.BooleanField(default=False, blank=False, null=False)
 
@@ -109,7 +113,7 @@ class transactions(models.Model):
     # Text field
     idTransaction = models.CharField(max_length=255, blank=True,null=True)
 
-    last_status = models.CharField(max_length=255, blank=True,null=True, default='')
+    last_status = models.CharField(max_length=255, blank=True,null=True, default='') 
 
     # Profit 
     profit = models.FloatField(default=0, blank=True,null=True)
@@ -213,6 +217,9 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 
             instance_old = transaction_last_obj.instance_old
             instance_old.price_closed = price
+
+            now = datetime.now()
+            instance.close_at = now
             # Close the open transaction.  
             if instance.broker.broker == 'paperTrade':
                 # Close open trade Long Trade
@@ -263,7 +270,6 @@ def pre_save_profit(sender, instance, *args, **kwargs):
                         price=price).close_position(id=instance_old.idTransaction)
 
                     instance_old.qty_close = float(broker_results.response.qty)
-                    # instance_old.price_closed = float(broker_results.response.price)
                     instance_old.status = 'accepted_alpaca'
 
                     if instance_old.profit > 0:
@@ -396,46 +402,55 @@ def pre_save_profit(sender, instance, *args, **kwargs):
 
         instance.operation = 'long'
 
-        setting_active = setting_model.objects.get(owner_id=instance.owner.id,setting='Receive Long Notifications Push')
+        try:
 
-        if setting_active.bool_value:
+            setting_active = setting_model.objects.get(owner_id=instance.owner.id,setting='Receive Long Notifications Push')
 
-            notification_model.objects.create(
-                owner_id=instance.owner_id,
-                transact_id=instance.id,
-                notification='open_long_buy',
-                is_trade=True,
-                isClosed=False,
-                symbol=instance.symbol.symbolName,
-                image=instance.symbol.url,
-                strategyName=instance.strategyNews.strategyNews,
-                base_cost=instance.base_cost,
-                base_price=instance.price_open,
-                order=instance.order,
-                operation=instance.operation,
-                
-            )
+            if setting_active.bool_value:
+
+                notification_model.objects.create(
+                    owner_id=instance.owner_id,
+                    transact_id=instance.id,
+                    notification='open_long_buy',
+                    is_trade=True,
+                    isClosed=False,
+                    symbol=instance.symbol.symbolName,
+                    image=instance.symbol.url,
+                    strategyName=instance.strategyNews.strategyNews,
+                    base_cost=instance.base_cost,
+                    base_price=instance.price_open,
+                    order=instance.order,
+                    operation=instance.operation,
+
+                )
+
+        except Exception as e:
+            raise ValidationError(str(e.message))
 
     if instance.order == 'sell' and instance.trading_config.is_active_short:
 
         instance.operation = 'short'
 
-        setting_active_short = setting_model.objects.get(owner_id=instance.owner.id,setting='Receive Short Notifications Push')
+        try:
 
-        if setting_active_short.bool_value:
+            setting_active_short = setting_model.objects.get(owner_id=instance.owner.id,setting='Receive Short Notifications Push')
 
-            notification_model.objects.create(
-                owner_id=instance.owner_id,
-                transact_id=instance.id,
-                notification='close_long_sell',
-                is_trade=True,
-                isClosed=False,
-                symbol=instance.symbol.symbolName,
-                image=instance.symbol.url,
-                strategyName=instance.strategyNews.strategyNews,
-                base_cost=instance.base_cost,
-                base_price=instance.price_open,
-                order=instance.order,
-                operation=instance.operation,
-                profit=instance.profit,
-            )
+            if setting_active_short.bool_value:
+
+                notification_model.objects.create(
+                    owner_id=instance.owner_id,
+                    transact_id=instance.id,
+                    notification='close_long_sell',
+                    is_trade=True,
+                    isClosed=False,
+                    symbol=instance.symbol.symbolName,
+                    image=instance.symbol.url,
+                    strategyName=instance.strategyNews.strategyNews,
+                    base_cost=instance.base_cost,
+                    base_price=instance.price_open,
+                    order=instance.order,
+                    operation=instance.operation,
+                    profit=instance.profit,
+                )
+        except Exception as e:
+            raise ValidationError(str(e.message))

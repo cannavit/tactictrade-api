@@ -13,7 +13,7 @@ from .views import YahooFinView
 # /AAPL/1mo/30m
 
 urlpatterns = [
-    path('yahoo/<slug:symbol>/<slug:period>/<slug:interval>', YahooFinView.as_view(), name='yahoo_data'),
+    path('yahoo/<slug:symbolName>/<slug:period>/<slug:interval>/<slug:strategy>', YahooFinView.as_view(), name='yahoo_data'),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
